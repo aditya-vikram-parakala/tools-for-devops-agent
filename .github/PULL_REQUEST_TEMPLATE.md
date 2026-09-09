@@ -16,7 +16,7 @@ See CONTRIBUTING.md for guidance on contributing skills, custom agents, and test
 
 ## Testing
 
-<!-- How did you validate this change? For skills, include Agent Skill Eval results and manual DevOps Agent testing. -->
+<!-- How did you validate this change? For skills, include our skill evaluation tool results and manual DevOps Agent testing. -->
 
 ## License confirmation
 
