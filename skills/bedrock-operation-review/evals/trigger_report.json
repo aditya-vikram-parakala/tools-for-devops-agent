@@ -1,6 +1,6 @@
 {
   "skill_name": "bedrock-operation-review",
-  "skill_path": "/Users/smnixon/src/tmp/tools-for-devops-agent/skills/bedrock-operation-review",
+  "skill_path": "/tools-for-devops-agent/skills/bedrock-operation-review",
   "query_results": [
     {
       "query": "Which skill would help me run a Bedrock operational review? Just name it; do not run it.",

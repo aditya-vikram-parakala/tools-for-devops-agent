@@ -1,6 +1,6 @@
 {
   "skill_name": "bedrock-operation-review",
-  "skill_path": "/Users/smnixon/src/tmp/tools-for-devops-agent/skills/bedrock-operation-review",
+  "skill_path": "/tools-for-devops-agent/skills/bedrock-operation-review",
   "eval_count": 5,
   "runs_per_eval": 1,
   "metadata": {

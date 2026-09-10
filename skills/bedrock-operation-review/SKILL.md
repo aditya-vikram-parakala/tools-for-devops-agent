@@ -159,13 +159,18 @@ Ref: [Security in Amazon Bedrock](https://docs.aws.amazon.com/bedrock/latest/use
   [Configure a VPC for Bedrock](https://docs.aws.amazon.com/bedrock/latest/userguide/usingVPC.html)
 - **IAM fine-grained access control**: agent/alias IAM policies using resource `*`
   without justification → MEDIUM. Follow least privilege for inference endpoints.
+  A comprehensive least-privilege audit of all IAM policies is out of scope for this
+  skill — flag obvious `*`-resource findings only, at INFO severity.
   [IAM for Amazon Bedrock](https://docs.aws.amazon.com/bedrock/latest/userguide/security-iam.html)
 - **Knowledge Base logging**: KB ingestion log delivery not configured → LOW.
   CloudTrail and CloudWatch not enabled for anomaly detection → MEDIUM.
 - **Prompt injection**: prompt templates not hardened against injection → guidance.
   [Prompt engineering best practices](https://docs.aws.amazon.com/prescriptive-guidance/latest/llm-prompt-engineering-best-practices/introduction.html)
-- **Model access**: model access not scoped to essential models (least privilege) →
-  MEDIUM.
+- **Model access**: Amazon Bedrock foundation models are enabled by default (no
+  explicit access request needed) — model access should instead be controlled via
+  IAM and SCP policies scoped to the essential models for the use case (least
+  privilege). A comprehensive least-privilege audit is out of scope for this skill —
+  report gaps at INFO severity only.
   [Model access](https://docs.aws.amazon.com/bedrock/latest/userguide/model-access.html)
 
 ### 4.2 Performance
@@ -186,7 +191,9 @@ Ref: [Monitoring Amazon Bedrock](https://docs.aws.amazon.com/bedrock/latest/user
   different model IDs or orchestration types than the current draft → MEDIUM (may
   miss performance or capability improvements).
 - **Invoked model versions**: models in Legacy or End-of-Life state still receiving
-  invocations → MEDIUM (plan upgrade; Legacy state lasts ≥6 months before EOL).
+  invocations → MEDIUM (plan upgrade; check the model card for its EOL date rather
+  than assuming a fixed notice period — Legacy notice periods are either 6 months or
+  45 days depending on the model, with most models using 6 months).
   [Model lifecycle](https://docs.aws.amazon.com/bedrock/latest/userguide/model-lifecycle.html)
 - **Data automation**: success rate <95%, error rate >5%, or throttle rate >1% for
   production workloads → MEDIUM.
@@ -208,7 +215,7 @@ Ref: [Bedrock quotas](https://docs.aws.amazon.com/bedrock/latest/userguide/quota
   and contextual grounding policies. Utilization >75% → MEDIUM. Note: CloudWatch
   metrics don't distinguish Classic vs Standard policy versions, so review manually
   when both are configured.
-  [Guardrail quotas](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-quotas.html)
+  [Guardrail quotas](https://docs.aws.amazon.com/general/latest/gr/bedrock.html#limits_bedrock)
 
 ### 4.4 Cost Optimization
 Ref: [Bedrock pricing](https://aws.amazon.com/bedrock/pricing/)

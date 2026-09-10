@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.0.0] - 2026-07-XX
+## [1.0.0] - 2026-09-10
 ### Added
 - Initial release adapted from AWS Support Specialist skill
 - Comprehensive Amazon Bedrock operational review aligned with the AWS Well-Architected Framework and Bedrock best practices

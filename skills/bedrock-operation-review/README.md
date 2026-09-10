@@ -9,7 +9,7 @@ When activated via Chat, this skill instructs the DevOps Agent to:
 1. Discover Bedrock resources in the configured account/regions — foundation models, guardrails, inference profiles, prompt routers, provisioned throughput, custom models, model customization jobs, agents, knowledge bases, data sources, and prompts.
 2. Collect CloudWatch metrics from the `AWS/Bedrock` namespace (also `CWAgent` namespaces) for invocations, latency, throttling, errors, token usage, guardrail interventions, and prompt-cache activity.
 3. Pull service quota values from Service Quotas and compare against observed usage.
-4. Analyze against six pillars — **Security, Performance, Service Quotas, Cost Optimization, Resilience** — plus check-specific guidance.
+4. Analyze against five pillars — **Security, Performance, Service Quotas, Cost Optimization, Resilience** — plus check-specific guidance.
 5. Generate a shareable report artifact, named `bedrock-review-<account-id>-<region>-<YYYY-MM-DD>.md`.
 
 All data is gathered through native AWS APIs (`bedrock`, `bedrockagent`, `cloudwatch`, `servicequotas`, `ec2`). The skill performs **no data-plane model invocations** and reads no prompt or response content. It does not depend on Kubernetes, EKS, or any internal tooling.
@@ -145,3 +145,10 @@ bedrock-operation-review/
 | MEDIUM | Notable improvement opportunity | 30 days |
 | LOW | Minor optimization or hardening | When convenient |
 | INFO | Observation, no action required | N/A |
+
+## Non-production disclaimer
+
+> ⚠️ This skill is sample code, not intended for production use without additional review
+> and testing. Validate in a non-production environment first. Proposed IAM policies are
+> suggestions derived from observed evidence — review and narrow them before applying, and
+> never apply an IAM change you have not read.
