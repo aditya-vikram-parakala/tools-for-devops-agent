@@ -160,7 +160,9 @@ with a note.
 
 1. Every dimension has a row in the Dimensions table.
 2. No dimension shows ✅ while a finding for it appears in Findings.
-3. No dimension shows ✅ if any of its inputs was `AccessDenied` or `ToolingFailure`.
+3. No dimension shows ✅ if any of its inputs was `AccessDenied`, `ToolingFailure`,
+   or `NoData` for the signal that dimension depends on. In particular the hot-key
+   dimension is ❓ whenever HK-01, HK-04, or HK-06 fired.
 4. Every finding body matches its `finding-logic.md` template, with only
    placeholders substituted.
 5. Every finding has an Evidence line naming a metric, API field, or sample

@@ -51,6 +51,19 @@ multi-table request, and never carries over between runs.
 `0..TotalSegments-1` is sampled exactly once so the sample spans the key space
 rather than one region of it.
 
+**`Limit` is not the only page bound.** A `Scan` page stops at **1 MB of scanned
+data** or `Limit` items, whichever comes first. With items averaging more than ~4 KB,
+the 1 MB cap binds first and a page returns fewer than `Limit` items — so the actual
+sample can be well below the planned size. Report `items_sampled` as what you
+actually received, never the planned figure, and recompute `pct_of_table` from it.
+Do not add pages to compensate: the page cap is a cost protection, and the reduced
+`n` belongs in the confidence annotation instead.
+
+When `mean_item_size_bytes` is unknown (stale `ItemCount`/`TableSizeBytes`), you
+cannot predict where the 1 MB cap lands. Quote the cost estimate as an upper bound of
+`0.5 × pages × 128` RCU (a full 1 MB page eventually-consistent = 128 RCU) and say it
+is an upper bound.
+
 ### Estimating cost
 
 An eventually-consistent read covers **4 KB per 0.5 RCU** — i.e. 8 KB per RCU.
@@ -184,7 +197,13 @@ Approximate value sizes:
 | `L`, `M` | sum of contained sizes + 3 bytes per element; `M` also counts each key name |
 | `SS`, `NS`, `BS` | sum of member sizes |
 
-These are approximations. **Cross-check them:** the sum of computed item sizes for
+These are approximations, but good ones: against a live 2,001-item validation table
+the computed total came within **0.2 %** of the capacity-derived total, and the RCU
+estimate predicted actual consumption to within **1.00×** (449.5 estimated, 450.5
+consumed). Treat a large drift as a signal that something is wrong with the
+computation, not as normal.
+
+**Cross-check them:** the sum of computed item sizes for
 a page should be within ~10 % of `ConsumedCapacity × 8192` for that page. If it is
 not, the computation is drifting — report item sizes as
 `approximate (±<observed drift>%)` and do not assert a 400 KB proximity finding on

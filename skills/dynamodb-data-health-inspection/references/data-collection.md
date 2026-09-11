@@ -93,15 +93,42 @@ From each report, record per contributor: `Keys`, `ApproximateAggregateValue`, a
 the originating rule name. Merge across rules, sort by value descending, keep the
 top 10.
 
-Rule names encode what they measure — a throttled-keys rule and a
-most-accessed-keys rule mean different things. Keep the rule name attached to
-every contributor so `finding-logic.md` can tell traffic concentration from
-throttle concentration. Do not merge contributors from a throttled-keys rule and
-an all-access rule into one ranking without labelling which is which.
+**Expect four rules per target, not one.** A table with Contributor Insights in
+all-access mode returns rules named on this pattern (verified against a live
+table):
 
-If status is not `ENABLED`, or `ContributorInsightsRuleList` is empty, set
-`hot_keys.status = "NotConfigured"` and skip `GetInsightRuleReport`. This is a
-finding, not an error.
+| Rule name prefix | Measures | `rule_kind` |
+|---|---|---|
+| `DynamoDBContributorInsights-PKC-<target>-<id>` | **P**artition **K**ey **C**ount — most-accessed partition keys | `most-accessed` |
+| `DynamoDBContributorInsights-SKC-<target>-<id>` | **S**ort **K**ey **C**ount — most-accessed key pairs | `most-accessed` |
+| `DynamoDBContributorInsights-PKT-<target>-<id>` | **P**artition **K**ey **T**hrottled | `throttled-keys` |
+| `DynamoDBContributorInsights-SKT-<target>-<id>` | **S**ort **K**ey **T**hrottled | `throttled-keys` |
+
+Map the `PKC`/`SKC`/`PKT`/`SKT` segment to `rule_kind`; if the name matches none of
+these, use `unknown` rather than guessing. In throttled-keys-only mode only the
+`PKT`/`SKT` rules exist, so an empty `PKC` result there is expected and is not a
+signal about traffic. For a GSI the `<target>` segment is `<table>-<index>`, which
+is how you attribute a contributor to the right index.
+
+Rank hot keys from the **`PKC`** rules for traffic concentration and the **`PKT`**
+rules for throttle concentration. Never merge the two into one ranking — a key can
+top one and not the other, and conflating them produces a finding that cannot be
+acted on.
+
+Set `hot_keys.status`:
+
+| Condition | Status |
+|---|---|
+| Status `ENABLED`, rules present, ≥ 1 contributor returned | `OK` |
+| Status not `ENABLED`, or `ContributorInsightsRuleList` empty | `NotConfigured` — skip `GetInsightRuleReport`; a finding, not an error |
+| Status `ENABLED`, rules present, **zero contributors in the window** | `NoData` — see below |
+
+**`NoData` is not `NotConfigured` and is never "no hot key".** Contributor Insights
+takes time to populate after enablement, and reports are bounded by the rule's
+retention. Zero contributors from an enabled rule means the window held no data —
+which is the expected result immediately after enabling it. Record `NoData`, widen
+the window once to 24 hours, and if it is still empty, report the hot-key dimension
+as **not determinable**. Never let this path render a healthy hot-key verdict.
 
 ### Step 4 — CloudWatch metrics
 
@@ -218,7 +245,7 @@ ttl:
     sum_14d: <int> | null
     daily: [<int>] | null
 hot_keys:
-  status: "OK" | "NotConfigured" | "AccessDenied" | "ToolingFailure"
+  status: "OK" | "NoData" | "NotConfigured" | "AccessDenied" | "ToolingFailure"
   mode: <string> | null                # all-access vs throttled-keys-only
   targets:                             # one entry per table/GSI queried
     - target: "table" | "<index-name>"

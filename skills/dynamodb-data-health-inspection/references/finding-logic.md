@@ -137,6 +137,28 @@ Trigger: `hot_keys.status == "NotConfigured"`, or every target's `ci_status != "
 > LSIs need no separate enablement; their activity appears under the base table's
 > keys because they share the base table's partitions.
 
+### HK-06 [A] · Contributor Insights enabled but returned no data · **Low**
+
+Trigger: `hot_keys.status == "NoData"` — status `ENABLED` and rules present, but zero
+contributors after retrying the window at 24 hours.
+
+> **Contributor Insights is enabled for `<targets>` but returned no contributors over
+> the last `<window>`, so hot keys are not determinable from this run.** An enabled
+> rule with no contributors is an empty window, not a verdict: Contributor Insights
+> takes time to populate after being enabled, and in **throttled-keys-only** mode the
+> throttled-key rules emit nothing at all unless throttling occurred — which, if the
+> table is healthy, is the expected and desirable result.
+>
+> Remediation: if Contributor Insights was enabled recently, re-run this inspection
+> after the table has served a representative traffic period. If it has been enabled
+> for some time and the mode is throttled-keys-only, the empty result is consistent
+> with a table that is not throttling — corroborate with the throttle metrics in this
+> report rather than concluding anything from the empty rule.
+
+This rule exists to close a specific hole: without it, an enabled-but-empty
+Contributor Insights produces no hot-key finding at all, and the dimension renders as
+though it had been assessed and found healthy. Mark the hot-key dimension ❓, never ✅.
+
 ### HK-02 [A] · Hot key confirmed with throttling · **High**
 
 Trigger: top contributor's value ≥ **3×** the second contributor's, **and**
@@ -479,6 +501,9 @@ Before rendering, verify the findings do not contradict each other:
 |---|---|
 | HK-02 / HK-03 vs HK-04 | Mutually exclusive — HK-04 only when no contributor was identified |
 | HK-01 vs HK-02 / HK-03 / HK-05 | If Contributor Insights is `NotConfigured`, HK-02 and HK-03 cannot fire |
+| HK-01 vs HK-06 | Mutually exclusive — HK-01 is `NotConfigured` (never enabled), HK-06 is `NoData` (enabled, empty window) |
+| HK-06 vs HK-02 / HK-03 | Mutually exclusive — no contributors means neither can fire |
+| HK-01 / HK-04 / HK-06 vs the dimensions table | Any of these three forces the hot-key dimension to ❓, never ✅ |
 | TTL-01 vs TTL-02 | Mutually exclusive — measured zero versus `NoData` |
 | TTL-01 vs TTL-03 / TTL-04 | If TTL-01 fired and a sample completed, TTL-03 or TTL-04 should normally explain it. If neither fired, say so explicitly: the zero deletion count is unexplained by the sample. |
 | TTL-06 vs all other TTL rules | If TTL is `DISABLED`, only TTL-06 applies |

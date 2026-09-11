@@ -85,6 +85,29 @@
     ]
   },
   {
+    "id": "ddb-data-health-stale-item-count",
+    "prompt": "Read table-context.json. For freshly-loaded-prod, ItemCount and TableSizeBytes are both 0. According to the skill, should sampling be skipped because the table looks empty? Do not call any AWS APIs; reason only from the file.",
+    "expected_output": "States that sampling must NOT be skipped: ItemCount and TableSizeBytes refresh only about every six hours, and ConsumedWriteCapacityUnits of 8884 proves writes occurred, so the metadata is stale rather than the table being empty. Notes the sample should be sized from the >1M tier and the cost estimate derived from measured ConsumedCapacity per page.",
+    "files": ["files/table-context.json"],
+    "assertions": [
+      "contains 'stale' or contains 'six hours' or contains '6 hours'",
+      "contains '8884' or contains '8,884' or contains 'write'",
+      "contains 'not' or contains 'should not' or contains \"n't\"",
+      "contains 'sampl'"
+    ]
+  },
+  {
+    "id": "ddb-data-health-ci-enabled-no-data",
+    "prompt": "Read table-context.json. For freshly-loaded-prod, Contributor Insights is ENABLED with four rules but returned zero contributors. According to the skill, how must the hot key dimension be reported? Do not call any AWS APIs; reason only from the file.",
+    "expected_output": "States this is NoData rather than NotConfigured, that HK-06 applies, that the hot key dimension must be marked not determinable / question mark and never healthy or a pass, because an enabled rule with an empty window is not evidence that no hot key exists.",
+    "files": ["files/table-context.json"],
+    "assertions": [
+      "contains 'NoData' or contains 'no data'",
+      "contains 'not determinable' or contains 'undetermined' or contains 'cannot' or contains 'not assessed'",
+      "contains 'never' or contains 'not healthy' or contains 'no conclusion'"
+    ]
+  },
+  {
     "id": "ddb-data-health-item-size-limit",
     "prompt": "Read table-context.json. For orders-prod, are any items close to the DynamoDB item size limit, and which attributes are driving item size? Do not call any AWS APIs; reason only from the file.",
     "expected_output": "Identifies 2 sampled items above 350 KB with a max of 372900 bytes against the 400 KB hard limit, and names lineItems (61.4 percent of sampled bytes) as the dominant attribute, followed by shippingHistory and customerNotes. Notes the finding is sampled and carries a confidence annotation.",

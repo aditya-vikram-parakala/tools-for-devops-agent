@@ -3,7 +3,7 @@ name: dynamodb-data-health-inspection
 description: "Inspect Amazon DynamoDB tables for data-level health issues that table-level metrics cannot reveal: hot partition keys, item size distribution (items near the 400 KB limit, attribute bloat, skew), TTL effectiveness (enabled but reclaiming nothing, missing or malformed TTL attributes, expired-item backlog), and GSI/LSI utilization (unused or write-only indexes, over-broad projections, item collections near the 10 GB LSI limit). Use when a table throttles while consumed capacity is low, storage or cost climbs unexplained, TTL is enabled but storage keeps growing, items may approach 400 KB, or when asked to review a table's data health, item distribution, index utilization, or schema anti-patterns. Read-only: control-plane, CloudWatch, and Contributor Insights analysis first, then bounded, consent-gated, value-redacting Scan sampling; never a full-table scan or a mutation. Does NOT tune capacity, request quota increases, audit alarm/PITR/backup/capacity-mode config, or diagnose latency or IAM AccessDenied."
 metadata:
   author: apparaka
-  version: "1.0.0"
+  version: "1.0.1"
   aws-devops-agent-skills.agent-types: "Chat tasks, Prevention, Incident RCA"
   aws-devops-agent-skills.aws-services: "Amazon DynamoDB, Amazon CloudWatch"
   aws-devops-agent-skills.technical-domains: "Database"
@@ -128,8 +128,17 @@ Sampling is required only for what Phase A physically cannot see: the item size
 Skip Phase B entirely — and say so in the report — when:
 
 - Phase A already answered the user's question, or
-- `ItemCount` is 0, or
-- the user asked for a control-plane-only / zero-cost review.
+- the user asked for a control-plane-only / zero-cost review, or
+- `ItemCount` is 0 **and** `TableSizeBytes` is 0 **and** `ConsumedWriteCapacityUnits`
+  is 0 or `NoData` over the window — i.e. corroborated as genuinely empty.
+
+**Never treat `ItemCount: 0` alone as an empty table.** `ItemCount` and
+`TableSizeBytes` refresh only about every six hours, so a recently created or
+recently loaded table reports both as `0` while holding millions of items. If either
+is `0` but `ConsumedWriteCapacityUnits` shows writes in the window, the metadata is
+stale, not the table: say so, size the sample from the `> 1 M` tier (the safe upper
+bound), and derive the cost estimate from measured `ConsumedCapacity` per page
+instead of from a mean item size you cannot compute.
 
 Otherwise follow `references/sampling-protocol.md`:
 
@@ -198,6 +207,13 @@ This is non-negotiable and belongs in the report, not just in your reasoning.
 
 - A `Scan` returns items in **partition-layout order, not random order.** A
   sample is therefore biased and is *corroborating* evidence, never proof.
+- **A sample can miss concentration entirely.** This is measured, not theoretical:
+  on a validation table where 40 % of items shared one partition key, a bounded
+  4-segment sample measured that key's share at 0.3 %, because the pages stopped
+  before reaching the partition holding it. So a low sampled share is **not**
+  evidence of even distribution — it carries almost no information. Only report
+  concentration when the sample shows it; never report evenness because the sample
+  failed to show it.
 - **Never assert a hot key from sampling alone.** Key frequency in a sample
   reflects storage distribution, not traffic distribution. A hot key is a
   *traffic* property, and only Contributor Insights measures it. Sampling can
