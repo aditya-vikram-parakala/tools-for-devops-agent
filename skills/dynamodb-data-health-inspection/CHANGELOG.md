@@ -21,8 +21,18 @@ least-privilege role the bundled CloudFormation template provisions.
 - Strengthened the sampling-bias warning with a measured case: where 40 % of items
   shared one partition key, a bounded sample measured its share at 0.3 %. A low
   sampled share is therefore not evidence of even distribution.
+- Fixed: IX-04 (over-broad GSI projection) silently did not fire when
+  `amplification_ratio` was null from stale `TableSizeBytes`, so a full projection on
+  a large table went unreported. It now degrades to a Low finding that states why the
+  ratio is unavailable. Added a general consistency rule: a threshold that cannot be
+  evaluated is never a passing threshold.
 - Recorded validated accuracy of the cost estimate (1.00x) and the item-size
   approximation (0.2 % drift against billed capacity).
+
+Rule discrimination verified against the live table: with Contributor Insights
+showing 16.7x traffic concentration but no key-range throttle events, HK-02
+(confirmed hot partition) correctly stayed suppressed and HK-03 (concentration
+without throttling) fired instead.
 
 ## 1.0.0
 

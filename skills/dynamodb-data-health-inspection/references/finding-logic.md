@@ -396,6 +396,14 @@ measured zeros, not `null` — **and** `index_size_bytes > 0`.
 
 Trigger: `projection_type == "ALL"` **and** `amplification_ratio > 0.8`.
 
+**If `amplification_ratio` is `null`** (because `IndexSizeBytes` or `TableSizeBytes`
+is 0 from stale metadata), do **not** silently skip this rule — a full projection on
+a large table is exactly what it exists to catch. Emit it at **Low** instead, with
+the ratio replaced by: "Storage amplification could not be computed because
+`IndexSizeBytes`/`TableSizeBytes` still read 0; DynamoDB refreshes them about every
+six hours. Re-run once they populate to quantify the overhead." Never let a
+non-computable ratio read as a passing check.
+
 > **GSI `<index_name>` projects ALL attributes and occupies `<index_size>`,
 > `<amplification>`× the base table's `<table_size>`.** A full projection duplicates
 > every attribute into the index, so both storage and write cost are roughly doubled
@@ -510,3 +518,4 @@ Before rendering, verify the findings do not contradict each other:
 | IX-01 vs IX-02 vs IX-03 | Mutually exclusive per index |
 | IS-01 vs IS-05 | Both may fire; IS-05 must not be phrased so as to imply the distribution is healthy when IS-01 fired |
 | Any [B] rule vs `sampling.status` | No `[B]` finding may appear unless `sampling.status == "completed"` or `"aborted"` with usable data |
+| Any rule whose threshold divides by `TableSizeBytes` or `ItemCount` | If either is 0 or `null` from stale metadata, the rule must degrade to a stated-uncertainty finding (see IX-04) rather than silently not firing. A threshold that cannot be evaluated is not a passing threshold. |
