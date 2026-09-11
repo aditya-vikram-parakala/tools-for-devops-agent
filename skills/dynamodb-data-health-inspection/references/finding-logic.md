@@ -4,6 +4,12 @@ Every threshold, severity rule, and body template for the four dimensions. Use t
 templates **verbatim**, substituting only `<placeholders>`. Do not reword, merge, or
 summarize findings.
 
+**Cite the exact rule ID that fired.** Write `TTL-04`, not "TTL-01 style" or "a TTL
+finding". The IDs distinguish materially different diagnoses — TTL-01 is *TTL deleted
+nothing*, TTL-04 is *the timestamps are malformed* — and they are how a reader
+verifies your reasoning against this file. If you are unsure which rule applies,
+re-read its trigger rather than hedging the label.
+
 Each rule is tagged **[A]** (Phase A, no sampling needed) or **[B]** (requires a
 completed sample). Skip **[B]** rules when `sampling.status != "completed"` and list
 them in the report's "Not assessed" section with the reason.
@@ -352,6 +358,17 @@ omit.
 Trigger: GSI `consumed_read_sum_30d == 0` — a **measured zero**, not `null` (which
 means the metric published no data and proves nothing) — **and**
 `consumed_write_sum_30d > 0` **and** `metric_coverage_days >= 30`.
+
+> **Check `metric_coverage_days` before firing this rule, every time.** It is
+> computed per `data-collection.md` as `min(datapoints returned, table age in days)`
+> — **not** the width of the window you queried. Asking for a 30-day window on a
+> table created this morning still yields `metric_coverage_days = 0`.
+>
+> This rule recommends **deleting a customer's index**. Firing it on a few hours of
+> data is a false High-severity finding that could destroy an index a batch job needs
+> next week. If `metric_coverage_days < 30`, the correct rule is **IX-02** — no
+> exceptions, no "but the read count is clearly zero". A zero over four hours is not
+> evidence of thirty days of disuse.
 
 > **GSI `<index_name>` served zero reads in 30 days while consuming
 > `<write_units>` write units.** An unread index is pure cost: every write to the

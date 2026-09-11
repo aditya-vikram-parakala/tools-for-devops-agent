@@ -168,8 +168,27 @@ classification is a separate concern from data health.
 | `WriteThrottleEvents` | `Sum` | 14 d | index pressure |
 
 The 30-day window matters: a GSI read once a month by a batch job is not unused.
-If the metric has fewer than 30 days of data (a new index), record the actual
-coverage and downgrade any unused-index finding to informational.
+
+### Computing `metric_coverage_days` — do not skip this
+
+**Querying a 30-day window does not mean you have 30 days of data.** This is the
+single easiest way to produce a false "unused index" finding, and it has happened in
+testing: a 4-hour-old table returned `ConsumedReadCapacityUnits = 0` for a 30-day
+window, which says nothing about whether the index is used.
+
+Compute coverage as the **minimum** of these two, at a daily (`86400`) period:
+
+1. **Datapoints returned** — the length of the metric's `Timestamps` array. A daily
+   period over a fully covered 30-day window returns ~30 datapoints; three
+   datapoints means three days of data, whatever window you asked for.
+2. **Table age** — `(now − DescribeTable.CreationDateTime)` in days. An index cannot
+   have more metric history than the table it belongs to. For a GSI added later,
+   there is no creation timestamp available, so the table's age is the upper bound
+   you can defend.
+
+Record the result as `metric_coverage_days` and carry it into every index finding.
+When it is below 30, the unused-index rules **must** route to IX-02, never IX-01 —
+see `finding-logic.md`.
 
 LSIs have **no** index-scoped CloudWatch metrics — their activity is reported
 under the base table because they share the base table's partitions. Never report

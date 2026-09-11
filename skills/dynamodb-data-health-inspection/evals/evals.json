@@ -108,6 +108,17 @@
     ]
   },
   {
+    "id": "ddb-data-health-null-amplification",
+    "prompt": "Read table-context.json. For freshly-loaded-prod, the orders-by-status GSI has projection_type ALL but amplification_ratio is null. According to the skill, does the over-broad-projection check pass, fail, or something else? Do not call any AWS APIs; reason only from the file.",
+    "expected_output": "States it is neither a pass nor a silent skip: because amplification_ratio is null from stale IndexSizeBytes/TableSizeBytes, IX-04 must still be emitted at Low severity with the ratio replaced by an explanation that it could not be computed and a note to re-run once metadata populates. A threshold that cannot be evaluated is not a passing threshold.",
+    "files": ["files/table-context.json"],
+    "assertions": [
+      "contains 'IX-04' or contains 'projection'",
+      "contains 'null' or contains 'not be computed' or contains 'cannot be computed' or contains 'stale'",
+      "contains 'Low' or contains 'still' or contains 'not a pass' or contains 'not pass'"
+    ]
+  },
+  {
     "id": "ddb-data-health-item-size-limit",
     "prompt": "Read table-context.json. For orders-prod, are any items close to the DynamoDB item size limit, and which attributes are driving item size? Do not call any AWS APIs; reason only from the file.",
     "expected_output": "Identifies 2 sampled items above 350 KB with a max of 372900 bytes against the 400 KB hard limit, and names lineItems (61.4 percent of sampled bytes) as the dominant attribute, followed by shippingHistory and customerNotes. Notes the finding is sampled and carries a confidence annotation.",

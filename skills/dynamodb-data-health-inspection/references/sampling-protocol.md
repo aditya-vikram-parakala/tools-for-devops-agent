@@ -39,13 +39,52 @@ Compute the plan first, then present it, then **wait**. Never sample and then as
 Consent is per table and per run — it does not carry over between tables in a
 multi-table request, and never carries over between runs.
 
+### You must aggregate in context — so bound the payload, not just the item count
+
+**This is the constraint that shapes everything below.** You have no code execution.
+Every per-item statistic is computed by reading the returned items in your own
+context. A page of 250 items at ~4 KB each is ~1 MB of JSON, and summarizing a
+payload that large produces unreliable arithmetic — in validation it yielded
+sub-batch counts that disagreed by 3×.
+
+So Phase B runs as **two passes with different shapes**, because the two questions
+have different payload costs:
+
+| Pass | Projection | Items | Payload | Answers |
+|---|---|---|---|---|
+| **1 — TTL & keys** | `#pk, #sk, #ttl` only | up to 1,000 | small — a few hundred bytes/item | TTL-03/04/05, HK-05 |
+| **2 — item size** | none (full items needed) | **100–200 total** | bounded by the small `n` | IS-01/02/03/04 |
+
+Run **pass 1 first**. It is cheap to reason over and answers the TTL questions that
+most often explain the user's complaint. Run pass 2 only if item size is actually in
+question, and keep `n` small enough that you can total the sizes reliably in one
+pass.
+
+If a payload still comes back too large to aggregate consistently, **do not force a
+number**. Say the sample could not be summarized reliably, report only the signals
+that were stable across every attempt, and offer a smaller re-run. A finding built
+on arithmetic you do not trust is worse than no finding.
+
 ### Sizing the sample
+
+**Pass 1 — TTL and key distribution** (`ProjectionExpression` on):
 
 | Table `ItemCount` | Segments | `Limit` per page | Pages per segment | Items sampled |
 |---|---|---|---|---|
 | < 1,000 | 1 | 100 | ≤ 3 | ≤ 300 |
 | 1,000 – 1 M | 2 | 250 | 1 | 500 |
-| > 1 M | 4 | 250 | 1 | 1,000 |
+| > 1 M, or unknown/stale | 4 | 250 | 1 | 1,000 |
+
+**Pass 2 — item size** (no projection, full items):
+
+| Table `ItemCount` | Segments | `Limit` per page | Items sampled |
+|---|---|---|---|
+| any, including unknown | 4 | **25–50** | **100–200** |
+
+Pass 2's small `n` is deliberate and must be carried into the confidence annotation:
+`n=100` on a large table is a weak sample, and the confidence-downgrade rule in
+`finding-logic.md` will usually apply. That is the correct trade — a defensible
+weak finding beats an indefensible strong one.
 
 `TotalSegments` must be ≥ `Segment` count used, and every segment index in
 `0..TotalSegments-1` is sampled exactly once so the sample spans the key space
@@ -61,8 +100,12 @@ Do not add pages to compensate: the page cap is a cost protection, and the reduc
 
 When `mean_item_size_bytes` is unknown (stale `ItemCount`/`TableSizeBytes`), you
 cannot predict where the 1 MB cap lands. Quote the cost estimate as an upper bound of
-`0.5 × pages × 128` RCU (a full 1 MB page eventually-consistent = 128 RCU) and say it
-is an upper bound.
+**`pages × 128` RCU** — a full 1 MB page read eventually-consistently costs
+1,048,576 / 8,192 = **128 RCU** — and say it is an upper bound.
+
+Do not apply a further 0.5 factor: the 128 figure already includes the
+eventually-consistent discount. (An earlier version of this file halved it and
+under-predicted a measured 450 RCU as 256.)
 
 ### Estimating cost
 
@@ -89,15 +132,20 @@ charged on the size of items examined, not the size returned. So projecting fewe
 attributes costs the same RCU; what it changes is how much customer data crosses
 the wire and passes through the agent.
 
-| Mode | `ProjectionExpression` | Dimensions available | Data exposure |
-|---|---|---|---|
-| **shape** (default) | none — full item | item size distribution, attribute names and size contribution, TTL, key distribution | full items transit the agent, values discarded immediately and never recorded |
-| **minimal-exposure** | `#pk, #sk, #ttl` only | TTL, key distribution. **No item-size findings.** | no non-key values ever leave DynamoDB |
+Projection is therefore **not** primarily a cost lever — it is a payload and exposure
+lever, which is why pass 1 always uses it:
 
-Default to **shape**. Offer **minimal-exposure** proactively when the table name,
-attribute names, or the user's wording suggest regulated or personal data (`pii`,
-`patient`, `ssn`, `payment`, `card`, `health`, `kyc`, and similar). Both modes cost
-the same; say so, so the choice is about exposure and not about money.
+| Pass | `ProjectionExpression` | Dimensions available | Data exposure |
+|---|---|---|---|
+| **1 — TTL & keys** | `#pk, #sk, #ttl` only | TTL, key distribution | no non-key values ever leave DynamoDB |
+| **2 — item size** | none — full items required | item size distribution, attribute names and size contribution | full items transit the agent; values discarded immediately and never recorded |
+
+**`minimal-exposure` mode = run pass 1 only, and skip pass 2.** Offer it proactively
+when the table name, attribute names, or the user's wording suggest regulated or
+personal data (`pii`, `patient`, `ssn`, `payment`, `card`, `health`, `kyc`, and
+similar). Say plainly what it costs analytically: no item-size or 400 KB-proximity
+findings, because those require reading whole items. It does not save money — only
+exposure.
 
 Use `ExpressionAttributeNames` for the projection — TTL and key attribute names
 frequently collide with DynamoDB reserved words.

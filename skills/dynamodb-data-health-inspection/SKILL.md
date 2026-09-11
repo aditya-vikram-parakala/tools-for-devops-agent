@@ -3,7 +3,7 @@ name: dynamodb-data-health-inspection
 description: "Inspect Amazon DynamoDB tables for data-level health issues that table-level metrics cannot reveal: hot partition keys, item size distribution (items near the 400 KB limit, attribute bloat, skew), TTL effectiveness (enabled but reclaiming nothing, missing or malformed TTL attributes, expired-item backlog), and GSI/LSI utilization (unused or write-only indexes, over-broad projections, item collections near the 10 GB LSI limit). Use when a table throttles while consumed capacity is low, storage or cost climbs unexplained, TTL is enabled but storage keeps growing, items may approach 400 KB, or when asked to review a table's data health, item distribution, index utilization, or schema anti-patterns. Read-only: control-plane, CloudWatch, and Contributor Insights analysis first, then bounded, consent-gated, value-redacting Scan sampling; never a full-table scan or a mutation. Does NOT tune capacity, request quota increases, audit alarm/PITR/backup/capacity-mode config, or diagnose latency or IAM AccessDenied."
 metadata:
   author: apparaka
-  version: "1.0.1"
+  version: "1.0.5"
   aws-devops-agent-skills.agent-types: "Chat tasks, Prevention, Incident RCA"
   aws-devops-agent-skills.aws-services: "Amazon DynamoDB, Amazon CloudWatch"
   aws-devops-agent-skills.technical-domains: "Database"
@@ -99,11 +99,45 @@ Run the phases in order. Phase A always runs; Phase B runs only with consent.
    `references/data-collection.md`.
 2. If `DescribeTable` fails with `ResourceNotFoundException` → abort: "Table
    `<name>` does not exist in `<region>` or the role does not have access."
-3. Evaluate pre-flight: inspect every `status` field in the collected data.
+3. **Decide the scope, then collect for it.** Two modes, and they differ in what you
+   must collect and what you must deliver:
+
+   | | **Targeted question** | **Full review** |
+   |---|---|---|
+   | Looks like | "which GSIs are unused?", "is TTL working?", "any items near 400 KB?" | "review this table", "data health check", "audit before our peak" |
+   | Collect | the steps that dimension needs, plus `DescribeTable` | **every** step in the table below |
+   | Deliver | a direct answer, plus an explicit list of dimensions **not assessed** and an offer to run the full review | the complete report per `references/report-format.md` |
+   | Dimensions matrix | **do not render one** — it would imply coverage you do not have | required, all four rows |
+   | Final Delivery Contract | does not apply | applies |
+
+   Phase A collection steps:
+
+   | # | Call | Feeds |
+   |---|---|---|
+   | 1 | `sts:GetCallerIdentity` + `dynamodb:DescribeTable` | every dimension — always run |
+   | 2 | `dynamodb:DescribeTimeToLive` | TTL |
+   | 3 | `dynamodb:DescribeContributorInsights` — table **and every GSI** | hot keys |
+   | 4 | `cloudwatch:GetInsightRuleReport` — **every rule** from step 3 | hot keys |
+   | 5 | `cloudwatch:GetMetricData` — table metrics **and per-GSI metrics** | TTL, indexes, throttling |
+   | 6 | `application-autoscaling:DescribeScalableTargets` — skip when `PAY_PER_REQUEST` | indexes |
+
+   When in doubt, treat it as a full review: over-collecting costs nothing on the
+   data plane, and the cross-dimension correlations are where the real explanations
+   live — a cost question is often answered by the hot-key data, a TTL question by
+   the index data.
+4. Evaluate pre-flight: inspect every `status` field in the collected data.
    - Any `AccessDenied` → present the permissions audit (below) and wait.
    - Any `ToolingFailure` → present the tooling notice (below) and wait.
-4. Load `references/finding-logic.md` and apply every rule marked
+5. Load `references/finding-logic.md` and apply every rule marked
    **Phase A** against the collected data.
+
+**The rule that binds in both modes: never imply a dimension was assessed when it was
+not.** "Not determinable" and "not collected" are different claims. *Not
+determinable* means you asked and the data was unavailable — `AccessDenied`,
+`NoData`, a metric that does not exist. *Not collected* means you chose not to look,
+which is legitimate in targeted mode but must be labelled as such: say **"not
+collected in this run"** and offer to fetch it. Never route a not-collected dimension
+through the "Unable to verify" template, and never let it sit unmarked.
 
 Phase A alone produces real findings. These four never require sampling:
 
@@ -140,7 +174,10 @@ stale, not the table: say so, size the sample from the `> 1 M` tier (the safe up
 bound), and derive the cost estimate from measured `ConsumedCapacity` per page
 instead of from a mean item size you cannot compute.
 
-Otherwise follow `references/sampling-protocol.md`:
+Otherwise follow `references/sampling-protocol.md`. Note that it runs **two passes**
+with different shapes — a projected pass for TTL and key distribution, then a much
+smaller full-item pass for size — because you must aggregate every per-item statistic
+in your own context and a large payload cannot be totalled reliably.
 
 1. Build the sampling plan and compute the RCU and cost estimate.
 2. **Present the plan and wait for an explicit approval.** Do not proceed by
@@ -167,6 +204,20 @@ The consent prompt, verbatim in shape:
 >
 > 1. **Approve sampling** (recommended — needed for item-size and TTL findings)
 > 2. **Skip** — deliver control-plane findings only
+
+Put the table above in your **message text**, where it has room to be readable. If
+your runtime also takes structured choices, keep each option's label and description
+**under 80 characters** — some runtimes hard-reject longer ones and you lose a turn to
+a validation error.
+
+**Do not put the table name in an option description.** It is already in the question
+and in the message text, and interpolating it is what pushes these strings over the
+limit in practice. Use these exact short forms:
+
+| Label | Description |
+|---|---|
+| `Approve sampling` | `Bounded, redacted Scan to check TTL health and item sizes` |
+| `Skip sampling` | `Control-plane and CloudWatch findings only` |
 
 ### Phase C — REPORT
 
@@ -225,7 +276,11 @@ This is non-negotiable and belongs in the report, not just in your reasoning.
 - An absence in a sample is not evidence of absence. Never write "no oversized
   items exist" — write "no oversized items in the sample of `<N>`".
 
-## Final Delivery Contract (Required)
+## Final Delivery Contract (full reviews)
+
+This contract governs **full reviews**. For a targeted question, deliver the direct
+answer plus the not-assessed list per the scope table above — do not pad a
+single-dimension answer into the full report.
 
 The complete Data Health Inspection report is the authoritative output.
 
@@ -238,11 +293,11 @@ The complete Data Health Inspection report is the authoritative output.
 3. Return the same complete report in the user-facing final response.
 4. Do not replace the report with a summary, paraphrase, excerpt, or alternate
    structure. Only placeholder values are substituted.
-5. This applies regardless of phrasing. "Why is storage growing?", "check for hot
-   keys", "audit item sizes", and "data health review" all yield the **same full
-   standard report**. Never produce a condensed or reframed variant tailored to
-   the question wording — lead the report with the dimension the user asked
-   about, but include all four.
+5. Within full-review mode this applies regardless of phrasing: "review this table",
+   "data health check", and "audit before our peak" all yield the **same full
+   standard report**. Never produce a condensed or reframed variant tailored to the
+   question wording — lead with the dimension the user emphasised, but include all
+   four.
 
 ## Critical Rules
 
