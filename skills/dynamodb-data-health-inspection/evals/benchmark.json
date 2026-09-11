@@ -1,0 +1,978 @@
+{
+  "skill_name": "dynamodb-data-health-inspection",
+  "skill_path": "/Users/apparaka/Desktop/Nebula/tools-for-devops-agent/skills/dynamodb-data-health-inspection",
+  "eval_count": 8,
+  "runs_per_eval": 1,
+  "metadata": {
+    "timestamp": "2026-09-11T01:01:28Z"
+  },
+  "runs": [
+    {
+      "eval_id": "ddb-data-health-smoke-test",
+      "run_index": 0,
+      "with_skill": {
+        "eval_id": "ddb-data-health-smoke-test",
+        "run_index": 0,
+        "assertion_results": [
+          {
+            "text": "contains 'orders-prod'",
+            "passed": true,
+            "evidence": "Substring found: 'orders-prod'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'sessions-prod'",
+            "passed": true,
+            "evidence": "Substring found: 'sessions-prod'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'audit-log-prod'",
+            "passed": true,
+            "evidence": "Substring found: 'audit-log-prod'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'us-east-1'",
+            "passed": true,
+            "evidence": "Substring found: 'us-east-1'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          }
+        ],
+        "pass_rate": 1.0,
+        "summary": "With skill: 100% assertions passed",
+        "execution_metrics": {
+          "tool_calls": 1,
+          "token_counts": {
+            "input_tokens": 4,
+            "output_tokens": 195,
+            "cache_read_input_tokens": 54136,
+            "cache_creation_input_tokens": 35922
+          }
+        },
+        "timing": {
+          "elapsed_seconds": 15.42109824999352
+        },
+        "raw_output": "Three tables, all in `us-east-1` (account `111122223333`):\n\n| Table | Region |\n|---|---|\n| orders-prod | us-east-1 |\n| sessions-prod | us-east-1 |\n| audit-log-prod | us-east-1 |"
+      },
+      "without_skill": {
+        "eval_id": "ddb-data-health-smoke-test",
+        "run_index": 0,
+        "assertion_results": [
+          {
+            "text": "contains 'orders-prod'",
+            "passed": true,
+            "evidence": "Substring found: 'orders-prod'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'sessions-prod'",
+            "passed": true,
+            "evidence": "Substring found: 'sessions-prod'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'audit-log-prod'",
+            "passed": true,
+            "evidence": "Substring found: 'audit-log-prod'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'us-east-1'",
+            "passed": true,
+            "evidence": "Substring found: 'us-east-1'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          }
+        ],
+        "pass_rate": 1.0,
+        "summary": "Without skill: 100% assertions passed",
+        "execution_metrics": {
+          "tool_calls": 1,
+          "token_counts": {
+            "input_tokens": 4,
+            "output_tokens": 160,
+            "cache_read_input_tokens": 48860,
+            "cache_creation_input_tokens": 30662
+          }
+        },
+        "timing": {
+          "elapsed_seconds": 15.215579582989449
+        },
+        "raw_output": "Three tables, all in `us-east-1` (account 111122223333):\n\n- `orders-prod`\n- `sessions-prod`\n- `audit-log-prod`"
+      },
+      "delta_pass_rate": 0.0
+    },
+    {
+      "eval_id": "ddb-data-health-dimensions",
+      "run_index": 0,
+      "with_skill": {
+        "eval_id": "ddb-data-health-dimensions",
+        "run_index": 0,
+        "assertion_results": [
+          {
+            "text": "contains 'partition key' or contains 'hot key'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains 'partition key' \u2014 Substring found: 'partition key'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'item size'",
+            "passed": true,
+            "evidence": "Substring found: 'item size'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'TTL' or contains 'time to live'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains 'ttl' \u2014 Substring found: 'ttl'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'GSI' or contains 'index'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains 'gsi' \u2014 Substring found: 'gsi'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          }
+        ],
+        "pass_rate": 1.0,
+        "summary": "With skill: 100% assertions passed",
+        "execution_metrics": {
+          "tool_calls": 0,
+          "token_counts": {
+            "input_tokens": 2,
+            "output_tokens": 264,
+            "cache_read_input_tokens": 11335,
+            "cache_creation_input_tokens": 31472
+          }
+        },
+        "timing": {
+          "elapsed_seconds": 10.635245958023006
+        },
+        "raw_output": "Four dimensions:\n\n| Dimension | What it looks for |\n|---|---|\n| **Hot partition keys** | Traffic skew across partition keys \u2014 authoritatively from Contributor Insights, not sampling |\n| **Item size distribution** | Items near the 400 KB limit, attribute bloat, size skew; mean item size from `TableSizeBytes / ItemCount` |\n| **TTL effectiveness** | TTL enabled but reclaiming nothing, missing/malformed TTL attributes, expired-item backlog |\n| **GSI/LSI utilization** | Unused or write-only indexes, over-broad projections, item collections near the 10 GB LSI limit |\n\nAll four appear in every report regardless of how the question is phrased \u2014 the dimension you asked about leads, but none are dropped."
+      },
+      "without_skill": {
+        "eval_id": "ddb-data-health-dimensions",
+        "run_index": 0,
+        "assertion_results": [
+          {
+            "text": "contains 'partition key' or contains 'hot key'",
+            "passed": false,
+            "evidence": "No OR branch satisfied \u2014 contains 'partition key': Substring not found: 'partition key'; contains 'hot key': Substring not found: 'hot key'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'item size'",
+            "passed": false,
+            "evidence": "Substring not found: 'item size'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'TTL' or contains 'time to live'",
+            "passed": false,
+            "evidence": "No OR branch satisfied \u2014 contains 'ttl': Substring not found: 'ttl'; contains 'time to live': Substring not found: 'time to live'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'GSI' or contains 'index'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains 'index' \u2014 Substring found: 'index'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          }
+        ],
+        "pass_rate": 0.25,
+        "summary": "Without skill: 25% assertions passed",
+        "execution_metrics": {
+          "tool_calls": 10,
+          "token_counts": {
+            "input_tokens": 16,
+            "output_tokens": 2747,
+            "cache_read_input_tokens": 324335,
+            "cache_creation_input_tokens": 40351
+          }
+        },
+        "timing": {
+          "elapsed_seconds": 55.42511779099004
+        },
+        "raw_output": "No skill in this session defines a \"DynamoDB data health inspection,\" so I can't tell you its dimensions without inventing them.\n\nWhat I checked:\n- Local skills (`~/.claude/skills/`) and installed plugins \u2014 no DynamoDB health/inspection skill.\n- The AWS skill registry (`aws-mcp`) \u2014 closest match is `amazon-dynamodb` (data-layer design/review/debug). I pulled it and searched for \"health\"/\"inspection\"/\"dimension\"; it has no data-health-inspection workflow. Its \"dimensions\" hits are all about vector-index dimensionality and billing dimensions, unrelated.\n\nOne clue: your machine has a project directory at `~/Desktop/Nebula/tools-for-devops-agent-skills/dynamodb-data-health-inspection`, but that path doesn't currently exist on disk and isn't loaded here. If that's the skill you mean, point me at its `SKILL.md` (or install it) and I'll read off the dimensions verbatim."
+      },
+      "delta_pass_rate": 0.75
+    },
+    {
+      "eval_id": "ddb-data-health-sampling-safety",
+      "run_index": 0,
+      "with_skill": {
+        "eval_id": "ddb-data-health-sampling-safety",
+        "run_index": 0,
+        "assertion_results": [
+          {
+            "text": "contains 'read-only' or contains 'read only'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains 'read-only' \u2014 Substring found: 'read-only'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'consent' or contains 'approval' or contains 'approve'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains 'consent' \u2014 Substring found: 'consent'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains '1,000' or contains '1000'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains '1,000' \u2014 Substring found: '1,000'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'unbounded' or contains 'full-table' or contains 'full table' or contains 'whole table'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains 'full-table' \u2014 Substring found: 'full-table'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'redact' or contains 'never record' or contains 'not recorded'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains 'never record' \u2014 Substring found: 'never record'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          }
+        ],
+        "pass_rate": 1.0,
+        "summary": "With skill: 100% assertions passed",
+        "execution_metrics": {
+          "tool_calls": 3,
+          "token_counts": {
+            "input_tokens": 6,
+            "output_tokens": 1756,
+            "cache_read_input_tokens": 98449,
+            "cache_creation_input_tokens": 45568
+          }
+        },
+        "timing": {
+          "elapsed_seconds": 34.9253659590031
+        },
+        "raw_output": "Yes \u2014 safe by design. The skill is read-only: no mutation appears anywhere in its allowlist, and writes are explicitly denied. The only production caveat is that Phase B consumes read capacity on the live table, and that is gated behind explicit per-run consent.\n\n**Operations it performs**\n\nPhase A (always runs, zero data-plane cost):\n- `sts:GetCallerIdentity`\n- `dynamodb:DescribeTable`, `DescribeTimeToLive`, `DescribeContributorInsights`, `ListContributorInsights`, `ListTables`, `DescribeContinuousBackups`, `DescribeLimits`\n- `cloudwatch:GetMetricData`, `GetMetricStatistics`, `GetInsightRuleReport`, `DescribeInsightRules`, `DescribeAlarms`\n- `application-autoscaling:DescribeScalableTargets` (only when billing mode is PROVISIONED)\n\nPhase B (consent-gated, data plane): `dynamodb:Scan` and a single-partition `dynamodb:Query` (`Select: COUNT`) used only to estimate an LSI item collection.\n\n**Modifications: none.** `references/data-collection.md:296` hard-denies any `Put*`, `Update*`, `Delete*`, `Create*`, `BatchWriteItem`, `TransactWriteItems`, `UpdateContributorInsights`, `UpdateTimeToLive`, and `RestoreTable*`. It won't flip a feature's enablement state to observe it, and won't delete an item to test TTL. Enabling Contributor Insights is recommended in the report, never done for you.\n\n**Limits on reading item data**\n\n| Cap | Value |\n|---|---|\n| Default sample | 300 / 500 / 1,000 items, by table `ItemCount` |\n| Absolute ceiling | 10,000 items, only on explicit request, never beyond |\n| `TotalSegments` | \u2264 4 |\n| `Limit` per page | \u2264 250 |\n| `ConsistentRead` | always `false` |\n| Wall time | \u2264 60 s, then abort |\n| Consumed RCU | abort past estimate \u00d7 1.5 |\n\nNever a full-table `Scan`, never a `Scan` without `Limit`, never `Select: COUNT` over a whole table, never a scan of a table you didn't name. It aborts (rather than retrying or backing off) the moment sampling gets throttled, and it refuses to present the normal consent gate at all if the table throttled in the last h"
+      },
+      "without_skill": {
+        "eval_id": "ddb-data-health-sampling-safety",
+        "run_index": 0,
+        "assertion_results": [
+          {
+            "text": "contains 'read-only' or contains 'read only'",
+            "passed": false,
+            "evidence": "No OR branch satisfied \u2014 contains 'read-only': Substring not found: 'read-only'; contains 'read only': Substring not found: 'read only'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'consent' or contains 'approval' or contains 'approve'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains 'consent' \u2014 Substring found: 'consent'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains '1,000' or contains '1000'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains '1,000' \u2014 Substring found: '1,000'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'unbounded' or contains 'full-table' or contains 'full table' or contains 'whole table'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains 'full-table' \u2014 Substring found: 'full-table'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'redact' or contains 'never record' or contains 'not recorded'",
+            "passed": false,
+            "evidence": "No OR branch satisfied \u2014 contains 'redact': Substring not found: 'redact'; contains 'never record': Substring not found: 'never record'; contains 'not recorded': Substring not found: 'not recorded'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          }
+        ],
+        "pass_rate": 0.6,
+        "summary": "Without skill: 60% assertions passed",
+        "execution_metrics": {
+          "tool_calls": 12,
+          "token_counts": {
+            "input_tokens": 18,
+            "output_tokens": 4148,
+            "cache_read_input_tokens": 358290,
+            "cache_creation_input_tokens": 53028
+          }
+        },
+        "timing": {
+          "elapsed_seconds": 72.5619445409975
+        },
+        "raw_output": "Yes \u2014 safe by design, with one real caveat: the optional sampling phase reads live items and consumes read capacity. Read from `/Users/apparaka/Desktop/Nebula/tools-for-devops-agent/skills/dynamodb-data-health-inspection` (not currently installed in `~/.claude/skills`).\n\n## Operations it performs\n\n**Phase A \u2014 always runs, zero data-plane cost.** Explicit allowlist (`references/data-collection.md:281`):\n\n| Service | Operations |\n|---|---|\n| STS | `GetCallerIdentity` |\n| DynamoDB | `DescribeTable`, `DescribeTimeToLive`, `DescribeContributorInsights`, `ListContributorInsights`, `ListTables`, `DescribeContinuousBackups`, `DescribeLimits` |\n| CloudWatch | `GetMetricData`, `GetMetricStatistics`, `GetInsightRuleReport`, `DescribeInsightRules`, `DescribeAlarms` |\n| App Auto Scaling | `DescribeScalableTargets` |\n\n**Phase B \u2014 consent-gated, adds exactly two data-plane reads:** `dynamodb:Scan` (bounded sampling) and `dynamodb:Query` (`Select: COUNT` scoped to a *single* partition key, only for LSI item-collection estimation).\n\n## Does it modify anything\n\nNo. Hard-denied at both the skill and reference level: any `Put*`, `Update*`, `Delete*`, `Create*`, `BatchWriteItem`, `TransactWriteItems`, `UpdateContributorInsights`, `UpdateTimeToLive`, `RestoreTable*`. It explicitly will not toggle a feature's enablement state to observe it, and will not delete an item to test TTL. Where it finds Contributor Insights disabled, it *recommends* enabling it rather than doing so.\n\n## Limits on reading item data\n\n**Consent:** the plan (segments, item cap, RCU/cost estimate, what is and isn't recorded) is presented and the run stops until approved \u2014 per table, per run, never carried over. Decline \u2192 Phase A findings only.\n\n**Caps** (`references/sampling-protocol.md:98`) \u2014 ceilings, not defaults:\n\n- Default sample by table size: \u2264300 items (<1K items), 500 (1K\u20131M), 1,000 (>1M)\n- Absolute ceiling 10,000 items even on explicit request\n- `TotalSegments` \u2264 4, `Limit` \u2264 250/page, `ConsistentRead` alway"
+      },
+      "delta_pass_rate": 0.4
+    },
+    {
+      "eval_id": "ddb-data-health-ttl-not-deleting",
+      "run_index": 0,
+      "with_skill": {
+        "eval_id": "ddb-data-health-ttl-not-deleting",
+        "run_index": 0,
+        "assertion_results": [
+          {
+            "text": "contains 'epoch' or contains 'seconds'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains 'epoch' \u2014 Substring found: 'epoch'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'millisecond' or contains 'ms'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains 'millisecond' \u2014 Substring found: 'millisecond'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains '947'",
+            "passed": true,
+            "evidence": "Substring found: '947'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'expiresAt'",
+            "passed": true,
+            "evidence": "Substring found: 'expiresat'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'TimeToLiveDeletedItemCount' or contains '14 day' or contains '14-day'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains 'timetolivedeleteditemcount' \u2014 Substring found: 'timetolivedeleteditemcount'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          }
+        ],
+        "pass_rate": 1.0,
+        "summary": "With skill: 100% assertions passed",
+        "execution_metrics": {
+          "tool_calls": 6,
+          "token_counts": {
+            "input_tokens": 10,
+            "output_tokens": 19677,
+            "cache_read_input_tokens": 214702,
+            "cache_creation_input_tokens": 66035
+          }
+        },
+        "timing": {
+          "elapsed_seconds": 231.60157875000732
+        },
+        "raw_output": "I'll read the context file and the skill's finding logic.Read `table-context.json` and applied `references/finding-logic.md`. No AWS calls \u2014 all values come from the file (collected 2026-09-10T12:00Z).\n\n**Root cause: a unit-scale bug in the writer.** `expiresAt` is being written in epoch *milliseconds*, and DynamoDB TTL requires epoch *seconds*. 947 of 1,000 sampled items hold values around 1.79 \u00d7 10\u00b9\u00b2, which read as seconds land tens of thousands of years in the future, so TTL correctly declines to expire them. TTL is working; it has nothing eligible to delete \u2014 hence `TimeToLiveDeletedItemCount` = 0 for 14 straight days while the table sits at 96 GB / 214 M items and keeps growing.\n\nFull report below (also written to `dynamodb-data-health-sessions-prod-2026-09-10.md`).# DynamoDB Data Health Inspection \u2014 `sessions-prod`\n\n**Account** 111122223333 \u00b7 **Region** us-east-1 \u00b7 **Inspected** 2026-09-10 12:00 UTC\n**Health rating: Low \u2014 needs attention**\n\n> **Data provenance:** no AWS APIs were called for this run. Every value below is read from the supplied context file `table-context.json` (`collected_at` 2026-09-10T12:00:00Z), including its already-completed data-plane sample. Region `us-east-1` and account `111122223333` are taken from that file.\n\nTTL is enabled on `expiresAt` and has deleted **zero** items in 14 days, and the sample explains why: **94.7 % of sampled items store `expiresAt` at millisecond scale** (values around 1.79 \u00d7 10\u00b9\u00b2), which DynamoDB reads as a timestamp tens of thousands of years in the future. TTL is functioning \u2014 it simply has almost nothing eligible to expire, so a 96.0 GB / 214 M-item session table retains data the retention policy intends to remove, and storage grows without bound. The failure is silent: no error, no metric, no throttle. Single next action: fix the writer to emit Unix epoch **seconds** as a Number, then backfill the affected items (a millisecond value divided by 1,000 recovers the intended timestamp).\n\n## Table Profile\n\n| | |"
+      },
+      "without_skill": {
+        "eval_id": "ddb-data-health-ttl-not-deleting",
+        "run_index": 0,
+        "assertion_results": [
+          {
+            "text": "contains 'epoch' or contains 'seconds'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains 'epoch' \u2014 Substring found: 'epoch'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'millisecond' or contains 'ms'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains 'millisecond' \u2014 Substring found: 'millisecond'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains '947'",
+            "passed": true,
+            "evidence": "Substring found: '947'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'expiresAt'",
+            "passed": true,
+            "evidence": "Substring found: 'expiresat'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'TimeToLiveDeletedItemCount' or contains '14 day' or contains '14-day'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains 'timetolivedeleteditemcount' \u2014 Substring found: 'timetolivedeleteditemcount'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          }
+        ],
+        "pass_rate": 1.0,
+        "summary": "Without skill: 100% assertions passed",
+        "execution_metrics": {
+          "tool_calls": 4,
+          "token_counts": {
+            "input_tokens": 8,
+            "output_tokens": 5782,
+            "cache_read_input_tokens": 136890,
+            "cache_creation_input_tokens": 33992
+          }
+        },
+        "timing": {
+          "elapsed_seconds": 93.16327962500509
+        },
+        "raw_output": "I'll read the file first.The `dynamodb-data-health-inspection` skill isn't installed on this machine (only a past-session directory for it exists), so I applied the finding logic the fixture itself encodes in its `ttl_evaluation` counters and cross-checks.\n\n## Root cause\n\n`sessions-prod` writes `expiresAt` in **milliseconds**, but DynamoDB TTL requires **Unix epoch seconds**. 947 of 1000 sampled items are flagged `malformed_scale` with values around 1.79e12. Read as seconds, that timestamp lands tens of thousands of years out, so TTL evaluates every one of those items as not-yet-expired and never deletes them. The TTL *configuration* is healthy \u2014 `state: ENABLED`, `attribute_name: expiresAt` \u2014 which is why config-level checks pass and storage still climbs.\n\nNote that 1.79e12 **ms** is epoch second ~1.79e9, i.e. early September 2026 \u2014 right about now. So these sessions were meant to be expiring today; the writer is live and still producing bad values. (Side note: the fixture's own note says \"roughly 5,000 years in the future\"; 1.79e12 seconds is actually ~56,700 years out, year ~58,700. Doesn't change the conclusion.)\n\n## What the data shows\n\n| Signal | Value | Reading |\n|---|---|---|\n| `ttl.state` / attribute | ENABLED / `expiresAt` | Config is correct \u2014 not the problem |\n| `deleted_item_count.sum_14d` | 0, and all 14 daily buckets are 0 | Real measured zero (`status: OK`, not `NoData`) |\n| `malformed_scale` | 947 / 1000 | The defect |\n| `missing`, `malformed_type`, `malformed_value`, `suspicious_future`, `expired` | all 0 | No competing hypothesis |\n| `pending` | 53 | The 5.3% correctly-scaled items simply aren't due yet |\n\nThree cross-checks rule out the alternatives:\n\n- **Not a metrics gap.** `audit-log-prod`, same account and region, reports 2,140,000 TTL deletions over the same 14 days. The metric emits fine here.\n- **Not deletion lag.** TTL normally clears items within ~48h; fourteen consecutive days of exactly zero is not a backlog.\n- **Zero deletions is full"
+      },
+      "delta_pass_rate": 0.0
+    },
+    {
+      "eval_id": "ddb-data-health-unused-index",
+      "run_index": 0,
+      "with_skill": {
+        "eval_id": "ddb-data-health-unused-index",
+        "run_index": 0,
+        "assertion_results": [
+          {
+            "text": "contains 'orders-by-status'",
+            "passed": true,
+            "evidence": "Substring found: 'orders-by-status'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains '30' or contains 'thirty'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains '30' \u2014 Substring found: '30'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'ALL' or contains 'projection'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains 'all' \u2014 Substring found: 'all'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'write' or contains 'writes'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains 'write' \u2014 Substring found: 'write'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          }
+        ],
+        "pass_rate": 1.0,
+        "summary": "With skill: 100% assertions passed",
+        "execution_metrics": {
+          "tool_calls": 6,
+          "token_counts": {
+            "input_tokens": 10,
+            "output_tokens": 23639,
+            "cache_read_input_tokens": 226154,
+            "cache_creation_input_tokens": 68312
+          }
+        },
+        "timing": {
+          "elapsed_seconds": 264.4146387920191
+        },
+        "raw_output": "I'll read the context file first.**`orders-by-status`** is the index costing money without being used. Report also written to `dynamodb-data-health-orders-prod-2026-09-10.md`.\n\n---\n\n# DynamoDB Data Health Inspection \u2014 `orders-prod`\n\n**Account** 111122223333 \u00b7 **Region** us-east-1 \u00b7 **Inspected** 2026-09-10 12:00 UTC\n**Health rating: Low \u2014 needs attention**\n\n> Provenance: all values below come from `table-context.json` (collected 2026-09-10T12:00:00Z). No AWS API calls were made in this run, per your instruction.\n\n**GSI `orders-by-status` is the index costing money without being used.** It served a measured **zero read units over 30 full days** of metric coverage while consuming **42,800,000 write units** in the same window, and it holds **379 GB** of storage \u2014 0.92\u00d7 the 412 GB base table, because it projects `ALL` attributes. That is roughly a doubling of this table's storage footprint and a per-write replication cost for an index nothing reads. It also adds a throttling surface that can block base-table writes. The single next action: confirm with the owning application that no query path targets `orders-by-status`, then delete it. Two other High-severity problems are live on this table \u2014 a confirmed hot partition and write throttling on the *other* GSI \u2014 and both are detailed below.\n\n## Table Profile\n\n| | |\n|---|---|\n| Status | `ACTIVE` |\n| Capacity mode | `PROVISIONED` |\n| Items | 48,200,000 (approximate) |\n| Size | 412 GB (approximate) |\n| Mean item size | 8,548 bytes \u2248 8.3 KB (approximate) |\n| Partition key | `customerId` |\n| Sort key | `orderId` |\n| GSIs | 2 \u00b7 LSIs | 0 |\n| TTL | `DISABLED` |\n| Contributor Insights | `ENABLED` (throttled-keys-only) on the base table; no GSI target reported |\n\n> `ItemCount` and `TableSizeBytes` are refreshed by DynamoDB approximately every six hours and are approximations.\n\n## Dimensions\n\n| Dimension | Result | Assessed via |\n|---|---|---|\n| Hot keys | \u274c `c#8f3a2b91` is a confirmed hot partition with 14,622 write key-range throt"
+      },
+      "without_skill": {
+        "eval_id": "ddb-data-health-unused-index",
+        "run_index": 0,
+        "assertion_results": [
+          {
+            "text": "contains 'orders-by-status'",
+            "passed": true,
+            "evidence": "Substring found: 'orders-by-status'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains '30' or contains 'thirty'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains '30' \u2014 Substring found: '30'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'ALL' or contains 'projection'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains 'all' \u2014 Substring found: 'all'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'write' or contains 'writes'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains 'write' \u2014 Substring found: 'write'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          }
+        ],
+        "pass_rate": 1.0,
+        "summary": "Without skill: 100% assertions passed",
+        "execution_metrics": {
+          "tool_calls": 2,
+          "token_counts": {
+            "input_tokens": 4,
+            "output_tokens": 1092,
+            "cache_read_input_tokens": 48894,
+            "cache_creation_input_tokens": 31747
+          }
+        },
+        "timing": {
+          "elapsed_seconds": 28.957148917019367
+        },
+        "raw_output": "I'll read the file first.**`orders-by-status`** \u2014 a 379 GB `ALL`-projection GSI that has served zero reads in 30 days.\n\nEvidence from the file:\n\n| Signal | Value | Why it matters |\n|---|---|---|\n| `consumed_read_sum_30d` | **0** | No query traffic at all over the full window |\n| `metric_coverage_days` | 30 | The zero is real coverage, not a gap in metrics |\n| `consumed_write_sum_30d` | 42,800,000 | Every base-table write still replicates into it, billed as write capacity |\n| `index_size_bytes` | 379 GB (vs. 412 GB base) | `amplification_ratio` 0.92 \u2014 near-full copy of the table |\n| `projection_type` | `ALL` | Cause of the size: every attribute copied, including `lineItems` (61.4% of item bytes) |\n| `index_status` | ACTIVE | Not mid-backfill, so the zero reads aren't explained by a build in progress |\n| `billing_mode` | PROVISIONED, autoscaling off for read/write | Provisioned read capacity is paid for continuously despite 0 consumption |\n\nThe contrast with the sibling index confirms it isn't a metrics collection problem: `orders-by-date` on the same table reports 12.4M reads over the same 30 days, so index-scoped read metrics are being collected for this table.\n\nTwo caveats before you act on it:\n\n- 30 days of zero reads doesn't rule out a quarterly or annual job, a disaster-recovery/manual-ops query path, or a consumer that is currently disabled. Check application code and IAM/CloudTrail for `Query` calls naming `orders-by-status` before deleting \u2014 GSI deletion is irreversible and rebuilding a 379 GB index is a long, expensive backfill.\n- Deleting it also removes 42.8M writes/30d of replicated write capacity, which is where most of the savings are. If you need to keep the access path, recreating it as `KEYS_ONLY` or with a narrow projection (excluding `lineItems` and `shippingHistory`, 75.6% of item bytes combined) would cut both storage and write amplification substantially while preserving queryability.\n\nSeparately worth noting on this table, though not what you a"
+      },
+      "delta_pass_rate": 0.0
+    },
+    {
+      "eval_id": "ddb-data-health-hot-key-authority",
+      "run_index": 0,
+      "with_skill": {
+        "eval_id": "ddb-data-health-hot-key-authority",
+        "run_index": 0,
+        "assertion_results": [
+          {
+            "text": "contains 'Contributor Insights' or contains 'contributor insights'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains 'contributor insights' \u2014 Substring found: 'contributor insights'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'KeyRange' or contains 'key range' or contains 'key-range'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains 'keyrange' \u2014 Substring found: 'keyrange'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains '14622' or contains '14,622'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains '14,622' \u2014 Substring found: '14,622'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'storage' or contains 'partition-layout' or contains 'partition layout' or contains 'not random'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains 'storage' \u2014 Substring found: 'storage'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          }
+        ],
+        "pass_rate": 1.0,
+        "summary": "With skill: 100% assertions passed",
+        "execution_metrics": {
+          "tool_calls": 6,
+          "token_counts": {
+            "input_tokens": 10,
+            "output_tokens": 23775,
+            "cache_read_input_tokens": 226355,
+            "cache_creation_input_tokens": 68124
+          }
+        },
+        "timing": {
+          "elapsed_seconds": 268.74241633398924
+        },
+        "raw_output": "I'll read the context file first.Read the context; here are the two answers, then the full report.\n\n**Is there a hot partition key? Yes \u2014 `c#8f3a2b91`, and two independent signals prove it:** Contributor Insights (table target, `throttled-keys-only` mode) ranks it at 184,320 vs 21,400 for the next key \u2014 8.6\u00d7 higher \u2014 and the table recorded 14,622 `WriteKeyRangeThroughputThrottleEvents` over 14 days. A key-range throttle event *is* the direct signal that one partition exceeded its 1,000 WCU/s ceiling, and it happened while the table averaged only ~16.6 WCU/s in aggregate.\n\n**Does the sampled partition key distribution prove it? No \u2014 and it doesn't even suggest it.** The top sampled key holds 4.1% of 1,000 sampled items (902 distinct keys), below the 20% threshold that would raise even a storage-skew finding. Separately, a `Scan` returns items in partition-layout order, so key frequency in a sample measures how items are **stored**, never how traffic is **distributed**. Even at 90% share it would not be evidence of a hot key. The fact that the same digest appears in both places is coincidental corroboration at best \u2014 the proof is entirely in Contributor Insights plus the key-range metric.Full report follows (also saved to `dynamodb-data-health-orders-prod-2026-09-10.md`). No AWS APIs were called \u2014 every value is read from `table-context.json`, which reports a sample that was already collected and consented to.\n\n---\n\n# DynamoDB Data Health Inspection \u2014 `orders-prod`\n\n**Account** 111122223333 \u00b7 **Region** us-east-1 \u00b7 **Inspected** 2026-09-10 12:00 UTC\n**Health rating: Low \u2014 needs attention**\n\nPartition key `c#8f3a2b91` is a confirmed hot partition: Contributor Insights ranks it 8.6\u00d7 above the next key and the table recorded 14,622 write key-range throughput throttle events in 14 days, while aggregate write consumption averaged only ~16.6 WCU/s against a 1,000 WCU/s per-partition ceiling \u2014 the table has capacity, one partition does not. Compounding it, GSI `orders-by-sta"
+      },
+      "without_skill": {
+        "eval_id": "ddb-data-health-hot-key-authority",
+        "run_index": 0,
+        "assertion_results": [
+          {
+            "text": "contains 'Contributor Insights' or contains 'contributor insights'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains 'contributor insights' \u2014 Substring found: 'contributor insights'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'KeyRange' or contains 'key range' or contains 'key-range'",
+            "passed": false,
+            "evidence": "No OR branch satisfied \u2014 contains 'keyrange': Substring not found: 'keyrange'; contains 'key range': Substring not found: 'key range'; contains 'key-range': Substring not found: 'key-range'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains '14622' or contains '14,622'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains '14622' \u2014 Substring found: '14622'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'storage' or contains 'partition-layout' or contains 'partition layout' or contains 'not random'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains 'storage' \u2014 Substring found: 'storage'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          }
+        ],
+        "pass_rate": 0.75,
+        "summary": "Without skill: 75% assertions passed",
+        "execution_metrics": {
+          "tool_calls": 1,
+          "token_counts": {
+            "input_tokens": 4,
+            "output_tokens": 2105,
+            "cache_read_input_tokens": 48907,
+            "cache_creation_input_tokens": 30718
+          }
+        },
+        "timing": {
+          "elapsed_seconds": 41.8835887919995
+        },
+        "raw_output": "I'll read the file first.**Yes \u2014 `orders-prod` has a hot partition key: `c#8f3a2b91`, and it's write-side.**\n\nWhat proves it (two independent signals that agree):\n\n1. **Contributor Insights throttled-keys rule** (`DynamoDBContributorInsights-PKC-orders-prod-1`, CI `ENABLED`) ranks `c#8f3a2b91` at 184,320 vs. 21,400 and 19,850 for the next two \u2014 ~8.6\u00d7 the runner-up. Because `mode` is `throttled-keys-only`, these contributors *are* keys that got throttled, so the rule is direct evidence of throttling concentrated on one key, not merely of high traffic.\n2. **Table-level throttling confirms real impact and localizes it to writes**: `write_sum_14d: 14622`, `throttled_requests_sum_14d: 9310`, with reads at 0 on both `key_range` and `events`. So throttling is actually happening, and it's write capacity.\n\nOne caveat on the magnitude: 184,320 exceeds the table's 14-day write-throttle sum of 14,622, so those CI values aren't comparable-unit counts of throttled writes over the same window. Use the **rank ordering** as the finding; don't quote 184,320 as an event count or derive a percent-of-traffic from it.\n\n**No \u2014 the sampled partition key distribution does not prove a hot key.** `distinct_keys: 902` over 1,000 items with `top_key_share_pct: 4.1` (\u224841 items) is not evidence of a hot partition, for three reasons:\n\n- **Wrong quantity.** The sample measures *items stored per key*; hotness is *requests per second per key*. The table has sort key `orderId`, so one `customerId` legitimately owning 41 orders is ordinary modeling, not skew.\n- **Scan locality artifact.** 1,000 items came from 4 segments / 4 pages \u2014 each page is a contiguous read, and items are stored sorted within a partition by sort key. Same-PK items are therefore adjacent by construction, which inflates any single key's share of a page. The 4.1% is partly a storage-layout artifact of how the sample was taken.\n- **No statistical power.** `pct_of_table: 0.000002` \u2014 1,000 of 48.2M items. Key cardinality and tail share"
+      },
+      "delta_pass_rate": 0.25
+    },
+    {
+      "eval_id": "ddb-data-health-accessdenied-not-healthy",
+      "run_index": 0,
+      "with_skill": {
+        "eval_id": "ddb-data-health-accessdenied-not-healthy",
+        "run_index": 0,
+        "assertion_results": [
+          {
+            "text": "contains 'AccessDenied' or contains 'access denied'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains 'accessdenied' \u2014 Substring found: 'accessdenied'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'not assessed' or contains 'Unable to verify' or contains 'unknown'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains 'not assessed' \u2014 Substring found: 'not assessed'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'cap' or contains 'Medium' or contains 'capped'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains 'cap' \u2014 Substring found: 'cap'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          }
+        ],
+        "pass_rate": 1.0,
+        "summary": "With skill: 100% assertions passed",
+        "execution_metrics": {
+          "tool_calls": 5,
+          "token_counts": {
+            "input_tokens": 8,
+            "output_tokens": 7996,
+            "cache_read_input_tokens": 164377,
+            "cache_creation_input_tokens": 60143
+          }
+        },
+        "timing": {
+          "elapsed_seconds": 118.79531933300314
+        },
+        "raw_output": "I'll read the context file and the relevant skill references.## Hot keys dimension \u2014 \u2753, never a verdict\n\n`audit-log-prod.hot_keys.status == \"AccessDenied\"` with `targets: []`. Required representation:\n\n| Element | Required content |\n|---|---|\n| Dimensions row | `Hot keys \\| \u2753 Not assessed \u2014 Contributor Insights read denied \\| not determinable`. Per report-format check 3, a dimension with an `AccessDenied` input is \u2753, never \u2705. |\n| Finding body | The **\"Unable to verify\" template** verbatim: *\"**Hot keys could not be assessed** \u2014 the Contributor Insights hot-key check returned `AccessDenied`. Grant `dynamodb:DescribeContributorInsights` and `cloudwatch:GetInsightRuleReport` and re-run. No conclusion about hot keys should be drawn from this report.\"* |\n| Table Profile | `Contributor Insights: not determinable (AccessDenied)` \u2014 **not** `DISABLED`. |\n| Not Assessed | One row for the hot-key check (`AccessDenied` on `dynamodb:DescribeContributorInsights` / `cloudwatch:GetInsightRuleReport`), one for **HK-05** (sampling declined). |\n\nRules that must **not** fire:\n\n- **HK-01** (Contributor Insights not enabled) \u2014 `AccessDenied` \u2260 `NotConfigured`. `data-collection.md:186` forbids conflating them: `NotConfigured` means the feature is absent, `AccessDenied` means its state is *unknown*. The empty `targets` array is an artifact of the denial, not evidence that CI is off, so the vacuous \"every target's `ci_status != ENABLED`\" match must not be taken.\n- **HK-04** \u2014 requires `key_range.*_sum_14d > 0`; both are `0`.\n- **HK-05** \u2014 `[B]`, and `sample.status == \"declined\"`.\n\nAnd the zero key-range throttle events must **not** be reported as \"no hot key\" \u2014 the skill requires \"not determinable\" whenever Contributor Insights was unavailable.\n\n## Health rating \u2014 `Indeterminate \u2014 cannot assess`\n\nThe derivation, in the order report-format prescribes:\n\n1. **Base from highest severity:** **IX-08** fires at High (table has an LSI, `item_collection_estimate.estimated_bytes` 9.1 GB \u2265 8 GB \u2014 flag"
+      },
+      "without_skill": {
+        "eval_id": "ddb-data-health-accessdenied-not-healthy",
+        "run_index": 0,
+        "assertion_results": [
+          {
+            "text": "contains 'AccessDenied' or contains 'access denied'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains 'accessdenied' \u2014 Substring found: 'accessdenied'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'not assessed' or contains 'Unable to verify' or contains 'unknown'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains 'not assessed' \u2014 Substring found: 'not assessed'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'cap' or contains 'Medium' or contains 'capped'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains 'cap' \u2014 Substring found: 'cap'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          }
+        ],
+        "pass_rate": 1.0,
+        "summary": "Without skill: 100% assertions passed",
+        "execution_metrics": {
+          "tool_calls": 5,
+          "token_counts": {
+            "input_tokens": 10,
+            "output_tokens": 2793,
+            "cache_read_input_tokens": 181119,
+            "cache_creation_input_tokens": 34132
+          }
+        },
+        "timing": {
+          "elapsed_seconds": 56.023892416997114
+        },
+        "raw_output": "The `dynamodb-data-health-inspection` skill isn't installed in this session (only a stale transcript directory bears that name \u2014 no `SKILL.md` on disk, and it isn't in the loaded skill list), so I can't quote its rules. What follows is inferred from the conventions the context file itself encodes, not from the skill text.\n\n**Hot key dimension for `audit-log-prod`** \u2014 must be reported as *unknown/not assessed*, never as \"no hot keys\" or a pass:\n\n- `hot_keys.status` is `AccessDenied` with `targets: []` \u2014 zero contributors is an absence of data, not evidence of even key distribution.\n- The one fallback that could have substituted a key-skew signal, `sample.partition_key_distribution`, is unavailable: `sample.status: \"declined\"` (`operator declined data-plane sampling`). The other two tables have that block; this one does not.\n- So the row must carry the reason for each gap (Contributor Insights call denied; sampling declined by operator) plus the remediation to close it (grant Contributor Insights describe/list permissions, or re-run with sampling consent).\n- The only adjacent hard evidence is control-plane/CloudWatch data that survived: `throttling.key_range` and `events` are all 0 over 14d, and consumed capacity is low (210K read / 1.9M write). That is worth stating as context, but it does not resolve hot keys \u2014 the `orders-prod` collection ran in `throttled-keys-only` mode, so a table with no throttling would surface no contributors even with full access. Absence of throttling can't be laundered into a clean hot-key verdict.\n- Related: `item_collection_estimate.estimated_bytes` (9.1 GB, vs. the 10 GB LSI item-collection limit) is labeled `estimated` and derived from a `Select=COUNT` query, so it must stay labeled estimated and keyed by digest (`t#9a20\u2026f1`), not treated as measured.\n\n**Overall health rating** \u2014 cannot be a clean rating. It must be explicitly qualified as partial/incomplete, naming hot keys (and the declined sample) as the uncovered dimensions, so the"
+      },
+      "delta_pass_rate": 0.0
+    },
+    {
+      "eval_id": "ddb-data-health-item-size-limit",
+      "run_index": 0,
+      "with_skill": {
+        "eval_id": "ddb-data-health-item-size-limit",
+        "run_index": 0,
+        "assertion_results": [
+          {
+            "text": "contains '400' or contains '400 KB'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains '400' \u2014 Substring found: '400'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'lineItems'",
+            "passed": true,
+            "evidence": "Substring found: 'lineitems'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains '350' or contains '372'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains '350' \u2014 Substring found: '350'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'sample' or contains 'sampled'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains 'sample' \u2014 Substring found: 'sample'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          }
+        ],
+        "pass_rate": 1.0,
+        "summary": "With skill: 100% assertions passed",
+        "execution_metrics": {
+          "tool_calls": 6,
+          "token_counts": {
+            "input_tokens": 14,
+            "output_tokens": 24117,
+            "cache_read_input_tokens": 317214,
+            "cache_creation_input_tokens": 67522
+          }
+        },
+        "timing": {
+          "elapsed_seconds": 272.71777608298
+        },
+        "raw_output": "I'll read the context file first.Read the file. Findings for `orders-prod` below \u2014 the full standard report, led by item size.Report written to `dynamodb-data-health-orders-prod-2026-09-10.md`. No AWS APIs called \u2014 everything below is derived from `table-context.json`.\n\n---\n\n# DynamoDB Data Health Inspection \u2014 `orders-prod`\n\n**Account** 111122223333 \u00b7 **Region** us-east-1 \u00b7 **Inspected** 2026-09-10 12:00 UTC\n**Health rating: Low \u2014 needs attention**\n\nYes \u2014 items are close to the 400 KB limit. Two of the 1,000 sampled items exceed 350 KB, the largest at **364.2 KB (91.1 % of the 400 KB hard limit, 35.8 KB of headroom)**, and the size is driven overwhelmingly by three attributes: `lineItems` (61.4 % of sampled bytes), `shippingHistory` (14.2 %), and `customerNotes` (6.8 %). A write that pushes one of these items past 400 KB fails with `ValidationException` in the application, with no DynamoDB metric to warn you. Separately and more urgently, this table has three High-severity findings unrelated to item size: a confirmed hot partition key with 14,622 write key-range throttle events, a GSI that served zero reads in 30 days while consuming 42.8 M write units, and a second GSI that is actively write-throttling. Next action: add an application-side size guard that offloads `lineItems` to Amazon S3 above a threshold you choose, so the 400 KB ceiling is never reached.\n\n## Table Profile\n\n| | |\n|---|---|\n| Status | ACTIVE |\n| Capacity mode | PROVISIONED |\n| Items | 48,200,000 (approximate) |\n| Size | 412 GB (approximate) |\n| Mean item size | ~8.5 KB (approximate) |\n| Partition key | `customerId` |\n| Sort key | `orderId` |\n| GSIs \u00b7 LSIs | 2 \u00b7 0 |\n| TTL | DISABLED |\n| Contributor Insights | ENABLED (throttled-keys-only) on the base table; not enabled on either GSI |\n\n> `ItemCount` and `TableSizeBytes` are refreshed by DynamoDB approximately every six hours and are approximations.\n\n## Dimensions\n\n| Dimension | Result | Assessed via |\n|---|---|---|\n| Hot keys | \u274c `customerId` value"
+      },
+      "without_skill": {
+        "eval_id": "ddb-data-health-item-size-limit",
+        "run_index": 0,
+        "assertion_results": [
+          {
+            "text": "contains '400' or contains '400 KB'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains '400' \u2014 Substring found: '400'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'lineItems'",
+            "passed": true,
+            "evidence": "Substring found: 'lineitems'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains '350' or contains '372'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains '350' \u2014 Substring found: '350'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'sample' or contains 'sampled'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains 'sample' \u2014 Substring found: 'sample'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          }
+        ],
+        "pass_rate": 1.0,
+        "summary": "Without skill: 100% assertions passed",
+        "execution_metrics": {
+          "tool_calls": 1,
+          "token_counts": {
+            "input_tokens": 4,
+            "output_tokens": 2370,
+            "cache_read_input_tokens": 48898,
+            "cache_creation_input_tokens": 30709
+          }
+        },
+        "timing": {
+          "elapsed_seconds": 42.55578941697604
+        },
+        "raw_output": "I'll read the file first.## Yes \u2014 the tail is at 91% of the 400 KB limit\n\nThe largest sampled item is **372,900 bytes = 91.0% of the 400 KB (409,600 B) hard limit**, leaving only ~36.7 KB of headroom. Since DynamoDB rejects any write over 400 KB outright, items this close mean further appends will start failing with `ValidationException`.\n\n| Statistic | Bytes | % of 400 KB |\n|---|---|---|\n| max | 372,900 | 91.0% |\n| p99 | 128,400 | 31.3% |\n| p95 | 44,800 | 10.9% |\n| median | 6,100 | 1.5% |\n| mean | 8,548 | 2.1% |\n\nHistogram tail: 2/1000 items >350 KB, 1 in 256\u2013350 KB, 25 in 64\u2013256 KB. Extrapolated to 48.2M items that's roughly **~96,000 items over 350 KB** and ~145,000 over 256 KB \u2014 order-of-magnitude only (see caveats).\n\nThe distribution is strongly right-skewed (mean 8,548 vs median 6,100), which is the signature of a few unbounded attributes rather than uniform bloat.\n\n## What's driving size\n\n| Attribute | Type | % of sampled bytes | Present in |\n|---|---|---|---|\n| `lineItems` | L (list) | 61.4% | 1000/1000 |\n| `shippingHistory` | L (list) | 14.2% | 812/1000 |\n| `customerNotes` | S (string) | 6.8% | 344/1000 |\n\nThose three account for **82.4%** of all sampled bytes; the remaining ~24 attributes (mean attribute count is 27) split the other 17.6%. Both top attributes are lists \u2014 collections that grow per order line and per shipping event with no natural ceiling, which is exactly the shape that produces a 372 KB outlier while the median stays at 6 KB. `lineItems` is the primary lever: it's present in every item and is 4\u00d7 the next contributor.\n\nTwo aggravating factors specific to this table:\n- **TTL is DISABLED**, so nothing ages out \u2014 items only grow.\n- The **`orders-by-status` GSI projects ALL** (379 GB, amplification 0.92), so every byte added to a base item is written twice. It also has `consumed_read_sum_30d: 0` over full 30-day coverage \u2014 it absorbs 42.8M write units and serves zero reads, so the projection is paying double storage and write cost for the bloat"
+      },
+      "delta_pass_rate": 0.0
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "mean_pass_rate": 1.0,
+      "stddev_pass_rate": 0.0,
+      "mean_tokens": 12677.4,
+      "mean_input_tokens": 8.0,
+      "mean_output_tokens": 12677.4,
+      "mean_total_tokens": 12685.4,
+      "mean_tool_calls": 4.1
+    },
+    "without_skill": {
+      "mean_pass_rate": 0.825,
+      "stddev_pass_rate": 0.2777,
+      "mean_tokens": 2649.6,
+      "mean_input_tokens": 8.5,
+      "mean_output_tokens": 2649.6,
+      "mean_total_tokens": 2658.1,
+      "mean_tool_calls": 4.5
+    },
+    "delta": {
+      "pass_rate": 0.175,
+      "tokens": 10027.8,
+      "total_tokens": 10027.2,
+      "input_tokens": -0.5,
+      "tool_calls": -0.4
+    },
+    "cost_efficiency": {
+      "quality_delta": 0.175,
+      "cost_delta_pct": 377.2,
+      "classification": "TRADEOFF",
+      "emoji": "\ud83d\udfe1",
+      "description": "Skill improves quality but increases cost"
+    },
+    "estimated_cost": {
+      "with_skill_per_run": {
+        "input_cost": 2.4e-05,
+        "output_cost": 0.190161,
+        "total_cost": 0.190185,
+        "model": "sonnet",
+        "currency": "USD"
+      },
+      "without_skill_per_run": {
+        "input_cost": 2.5e-05,
+        "output_cost": 0.039744,
+        "total_cost": 0.03977,
+        "model": "sonnet",
+        "currency": "USD"
+      },
+      "per_eval_pair": 0.229955,
+      "total_runs": 8,
+      "total_cost": 1.8396,
+      "model": "sonnet",
+      "currency": "USD"
+    }
+  },
+  "scores": {
+    "outcome": 1.0,
+    "process": 0.9167,
+    "style": 1.0,
+    "efficiency": 0.4051,
+    "overall": 0.8304
+  },
+  "passed": true
+}

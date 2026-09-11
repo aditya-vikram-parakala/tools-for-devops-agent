@@ -1,0 +1,65 @@
+{
+  "skill_name": "dynamodb-data-health-inspection",
+  "skill_path": "/Users/apparaka/Desktop/Nebula/tools-for-devops-agent/skills/dynamodb-data-health-inspection",
+  "timestamp": "2026-09-11T01:03:36Z",
+  "overall_score": 0.9322,
+  "overall_grade": "A",
+  "passed": true,
+  "sections": {
+    "audit": {
+      "score": 100,
+      "grade": "A",
+      "passed": true,
+      "normalized": 1.0,
+      "critical": 0,
+      "warning": 0,
+      "info": 0
+    },
+    "functional": {
+      "overall": 0.8304,
+      "grade": "B",
+      "passed": true,
+      "scores": {
+        "outcome": 1.0,
+        "process": 0.9167,
+        "style": 1.0,
+        "efficiency": 0.4051,
+        "overall": 0.8304
+      },
+      "cost_efficiency": {
+        "quality_delta": 0.175,
+        "cost_delta_pct": 377.2,
+        "classification": "TRADEOFF",
+        "emoji": "\ud83d\udfe1",
+        "description": "Skill improves quality but increases cost"
+      },
+      "estimated_cost": {
+        "with_skill_per_run": {
+          "input_cost": 2.4e-05,
+          "output_cost": 0.190161,
+          "total_cost": 0.190185,
+          "model": "sonnet",
+          "currency": "USD"
+        },
+        "without_skill_per_run": {
+          "input_cost": 2.5e-05,
+          "output_cost": 0.039744,
+          "total_cost": 0.03977,
+          "model": "sonnet",
+          "currency": "USD"
+        },
+        "per_eval_pair": 0.229955,
+        "total_runs": 8,
+        "total_cost": 1.8396,
+        "model": "sonnet",
+        "currency": "USD"
+      }
+    },
+    "trigger": {
+      "pass_rate": 1.0,
+      "grade": "A",
+      "passed": true,
+      "total_queries": 7
+    }
+  }
+}
