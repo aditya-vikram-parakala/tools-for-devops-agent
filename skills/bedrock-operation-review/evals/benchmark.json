@@ -4,7 +4,7 @@
   "eval_count": 5,
   "runs_per_eval": 1,
   "metadata": {
-    "timestamp": "2026-09-04T15:39:48Z"
+    "timestamp": "2026-09-11T23:25:30Z"
   },
   "runs": [
     {
@@ -53,15 +53,15 @@
           "tool_calls": 1,
           "token_counts": {
             "input_tokens": 4,
-            "output_tokens": 270,
-            "cache_read_input_tokens": 47299,
-            "cache_creation_input_tokens": 28692
+            "output_tokens": 269,
+            "cache_read_input_tokens": 51574,
+            "cache_creation_input_tokens": 29112
           }
         },
         "timing": {
-          "elapsed_seconds": 16.217737250000937
+          "elapsed_seconds": 15.202140458975919
         },
-        "raw_output": "Two resources in `bedrock-context.json`:\n\n| Name | Type | Region | Account |\n|------|------|--------|---------|\n| anthropic.claude-3-5-sonnet-20241022-v2:0 | model | us-east-1 | $accountId |\n| pii-content-filter | guardrail | us-east-1 | $accountId |\n\nNote: `account` is the literal placeholder `$accountId` in the file, not a resolved account ID."
+        "raw_output": "| Name | Type | Region | Account |\n|---|---|---|---|\n| anthropic.claude-3-5-sonnet-20241022-v2:0 | model | us-east-1 | $accountId |\n| pii-content-filter | guardrail | us-east-1 | $accountId |\n\nNote: the `account` field is the literal placeholder `$accountId` in both entries, not a real account ID."
       },
       "without_skill": {
         "eval_id": "bedrock-review-smoke-test",
@@ -106,15 +106,15 @@
           "tool_calls": 1,
           "token_counts": {
             "input_tokens": 4,
-            "output_tokens": 249,
-            "cache_read_input_tokens": 39119,
-            "cache_creation_input_tokens": 20528
+            "output_tokens": 244,
+            "cache_read_input_tokens": 42641,
+            "cache_creation_input_tokens": 20178
           }
         },
         "timing": {
-          "elapsed_seconds": 11.766718291997677
+          "elapsed_seconds": 11.425920790992677
         },
-        "raw_output": "| Name | Type | Region | Account |\n|---|---|---|---|\n| anthropic.claude-3-5-sonnet-20241022-v2:0 | model | us-east-1 | $accountId |\n| pii-content-filter | guardrail | us-east-1 | $accountId |\n\nNote: `account` is the literal placeholder `$accountId` in the file, not a resolved account ID."
+        "raw_output": "| Name | Type | Region | Account |\n|---|---|---|---|\n| anthropic.claude-3-5-sonnet-20241022-v2:0 | model | us-east-1 | $accountId |\n| pii-content-filter | guardrail | us-east-1 | $accountId |\n\nAccount is the literal placeholder `$accountId` in the file, not a resolved ID."
       },
       "delta_pass_rate": 0.0
     },
@@ -127,8 +127,8 @@
         "assertion_results": [
           {
             "text": "matches regex /bedrock-review-[a-z0-9-]+-\\d{4}-\\d{2}-\\d{2}\\.md/",
-            "passed": false,
-            "evidence": "Regex /bedrock-review-[a-z0-9-]+-\\d{4}-\\d{2}-\\d{2}\\.md/ did not match",
+            "passed": true,
+            "evidence": "Regex /bedrock-review-[a-z0-9-]+-\\d{4}-\\d{2}-\\d{2}\\.md/ matched",
             "method": "deterministic",
             "confidence": 1.0,
             "uncertain": false
@@ -142,21 +142,21 @@
             "uncertain": false
           }
         ],
-        "pass_rate": 0.5,
-        "summary": "With skill: 50% assertions passed",
+        "pass_rate": 1.0,
+        "summary": "With skill: 100% assertions passed",
         "execution_metrics": {
           "tool_calls": 1,
           "token_counts": {
             "input_tokens": 4,
-            "output_tokens": 365,
-            "cache_read_input_tokens": 47333,
-            "cache_creation_input_tokens": 28715
+            "output_tokens": 355,
+            "cache_read_input_tokens": 48145,
+            "cache_creation_input_tokens": 29385
           }
         },
         "timing": {
-          "elapsed_seconds": 13.221120708010858
+          "elapsed_seconds": 14.294720083009452
         },
-        "raw_output": "**First resource:** `anthropic.claude-3-5-sonnet-20241022-v2:0` (type: model), region **us-east-1**.\n\n**Report artifact filename:**\n```\nbedrock-review-$accountId-us-east-1-2026-09-04.md\n```\n\nNote: the account field in the file is the literal placeholder `$accountId`, so `<account-id>` isn't resolved \u2014 you'd substitute the real account ID before generating the report."
+        "raw_output": "First resource: `anthropic.claude-3-5-sonnet-20241022-v2:0` (type `model`), region `us-east-1`.\n\nReport artifact filename:\n\n```\nbedrock-review-$accountId-us-east-1-2026-09-11.md\n```\n\nNote: the `account` field is the literal placeholder `$accountId` in the context file, so substitute the real account ID once known (e.g. `bedrock-review-123456789012-us-east-1-2026-09-11.md`)."
       },
       "without_skill": {
         "eval_id": "bedrock-review-artifact-naming",
@@ -185,17 +185,17 @@
           "tool_calls": 1,
           "token_counts": {
             "input_tokens": 4,
-            "output_tokens": 199,
-            "cache_read_input_tokens": 39151,
-            "cache_creation_input_tokens": 20561
+            "output_tokens": 189,
+            "cache_read_input_tokens": 42669,
+            "cache_creation_input_tokens": 20205
           }
         },
         "timing": {
-          "elapsed_seconds": 12.927154333010549
+          "elapsed_seconds": 14.406852500047535
         },
-        "raw_output": "**First resource:** `anthropic.claude-3-5-sonnet-20241022-v2:0` (type: model) in region **us-east-1**.\n\n**Report artifact filename:** `bedrock-review-2026-09-04.md`"
+        "raw_output": "First resource: model `anthropic.claude-3-5-sonnet-20241022-v2:0` in region `us-east-1`.\n\nReport artifact filename: `bedrock-review-2026-09-11.md`"
       },
-      "delta_pass_rate": 0.0
+      "delta_pass_rate": 0.5
     },
     {
       "eval_id": "bedrock-review-data-source-priority",
@@ -243,15 +243,15 @@
           "tool_calls": 0,
           "token_counts": {
             "input_tokens": 2,
-            "output_tokens": 457,
-            "cache_read_input_tokens": 11329,
-            "cache_creation_input_tokens": 24685
+            "output_tokens": 438,
+            "cache_read_input_tokens": 11400,
+            "cache_creation_input_tokens": 25355
           }
         },
         "timing": {
-          "elapsed_seconds": 12.107662666006945
+          "elapsed_seconds": 21.47895508306101
         },
-        "raw_output": "The skill collects data through **AWS control-plane APIs and CloudWatch metrics only** \u2014 no data-plane calls. Specific APIs/namespaces it names:\n\n1. **`bedrock`** \u2014 e.g. `bedrock.ListFoundationModels`, `bedrock.ListGuardrails`, `bedrock.GetModelInvocationLoggingConfiguration`, `bedrock.ListProvisionedModelThroughputs`\n2. **`bedrockagent`** \u2014 e.g. `bedrockagent.ListAgents`, `bedrockagent.GetAgentVersion`, `bedrockagent.ListKnowledgeBases`\n3. **`cloudwatch`** \u2014 `cloudwatch.ListMetrics` and `cloudwatch.GetMetricData` against the `AWS/Bedrock` namespace (plus `CWAgent` for GPU metrics)\n4. **`servicequotas`** \u2014 `servicequotas.GetServiceQuota`\n5. **`ec2`** \u2014 for self-managed GPU instance context\n\n**No.** The skill explicitly does not invoke any foundation model (no data-plane calls) and does not read prompt or response content. It states this in both the intro (\"performs no data-plane model invocations and reads no prompt or response content\") and the Data Source Boundaries section."
+        "raw_output": "The skill collects data exclusively through native AWS control-plane and metrics APIs. Specific examples it names:\n\n- **`bedrock`** \u2014 e.g. `bedrock.ListGuardrails`, `bedrock.ListFoundationModels` (catalog reference only), `bedrock.GetModelInvocationLoggingConfiguration`, `bedrock.ListProvisionedModelThroughputs`\n- **`bedrockagent`** \u2014 e.g. `bedrockagent.ListAgents`, `bedrockagent.ListKnowledgeBases`, `bedrockagent.GetAgentVersion`\n- **`cloudwatch`** \u2014 e.g. `cloudwatch.ListMetrics` and `cloudwatch.GetMetricData` against the `AWS/Bedrock` namespace\n- **`servicequotas`** \u2014 e.g. `servicequotas.GetServiceQuota`\n- **`ec2`** \u2014 for self-managed GPU instance context\n\n**No foundation model is invoked, and no prompt/response content is read.** The skill explicitly performs no data-plane model invocations. It reads only metadata/presence for prompts (`ListPrompts`, never `GetPrompt`) and, for agent versions, reads only the model ID, orchestration type, and whether a prompt override exists \u2014 not the override template text."
       },
       "without_skill": {
         "eval_id": "bedrock-review-data-source-priority",
@@ -259,8 +259,8 @@
         "assertion_results": [
           {
             "text": "contains 'Bedrock' or contains 'bedrock'",
-            "passed": true,
-            "evidence": "OR satisfied by: contains 'bedrock' \u2014 Substring found: 'bedrock'",
+            "passed": false,
+            "evidence": "No OR branch satisfied \u2014 contains 'bedrock': Substring not found: 'bedrock'; contains 'bedrock': Substring not found: 'bedrock'",
             "method": "deterministic",
             "confidence": 1.0,
             "uncertain": false
@@ -283,30 +283,30 @@
           },
           {
             "text": "contains 'not' or contains 'no '",
-            "passed": true,
-            "evidence": "OR satisfied by: contains 'no ' \u2014 Substring found: 'no '",
+            "passed": false,
+            "evidence": "No OR branch satisfied \u2014 contains 'not': Substring not found: 'not'; contains 'no ': Substring not found: 'no '",
             "method": "deterministic",
             "confidence": 1.0,
             "uncertain": false
           }
         ],
-        "pass_rate": 0.5,
-        "summary": "Without skill: 50% assertions passed",
+        "pass_rate": 0.0,
+        "summary": "Without skill: 0% assertions passed",
         "execution_metrics": {
-          "tool_calls": 1,
+          "tool_calls": 0,
           "token_counts": {
-            "input_tokens": 4,
-            "output_tokens": 572,
-            "cache_read_input_tokens": 39163,
-            "cache_creation_input_tokens": 20768
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "cache_read_input_tokens": 0,
+            "cache_creation_input_tokens": 0
           }
         },
         "timing": {
-          "elapsed_seconds": 21.110713707996183
+          "elapsed_seconds": 120.0119533330435
         },
-        "raw_output": "I don't see a \"Bedrock operational review\" skill in the available skills list. Let me search for it on disk.There is no \"Bedrock operational review\" skill installed. I checked the available-skills list (none match) and searched `~/.claude` on disk \u2014 the only files mentioning \"bedrock\" are an unrelated `security-guidance` plugin README, its `llm.py` hook, and a marketplace manifest, none of which is a Bedrock operational-review skill.\n\nSo I can't tell you which AWS APIs \"the skill\" uses or whether it invokes a foundation model \u2014 that skill doesn't exist here to inspect. I'd rather say that than invent API names.\n\nIf you meant a specific skill, point me at its file or exact name and I'll read it and answer precisely."
+        "raw_output": ""
       },
-      "delta_pass_rate": 0.5
+      "delta_pass_rate": 1.0
     },
     {
       "eval_id": "bedrock-review-severity-definitions",
@@ -362,15 +362,15 @@
           "tool_calls": 0,
           "token_counts": {
             "input_tokens": 2,
-            "output_tokens": 29,
-            "cache_read_input_tokens": 11329,
-            "cache_creation_input_tokens": 24633
+            "output_tokens": 39,
+            "cache_read_input_tokens": 11400,
+            "cache_creation_input_tokens": 28764
           }
         },
         "timing": {
-          "elapsed_seconds": 9.490278542012675
+          "elapsed_seconds": 7.668922417098656
         },
-        "raw_output": "CRITICAL, HIGH, MEDIUM, LOW, INFO."
+        "raw_output": "From most to least urgent: **CRITICAL, HIGH, MEDIUM, LOW, INFO**."
       },
       "without_skill": {
         "eval_id": "bedrock-review-severity-definitions",
@@ -429,7 +429,7 @@
           }
         },
         "timing": {
-          "elapsed_seconds": 120.0107425830065
+          "elapsed_seconds": 120.00813362502959
         },
         "raw_output": ""
       },
@@ -489,15 +489,15 @@
           "tool_calls": 0,
           "token_counts": {
             "input_tokens": 2,
-            "output_tokens": 77,
-            "cache_read_input_tokens": 11329,
-            "cache_creation_input_tokens": 24632
+            "output_tokens": 256,
+            "cache_read_input_tokens": 11400,
+            "cache_creation_input_tokens": 28757
           }
         },
         "timing": {
-          "elapsed_seconds": 11.03785154200159
+          "elapsed_seconds": 11.560605249949731
         },
-        "raw_output": "The skill evaluates five pillars (mirroring the Bedrock operational review structure):\n\n1. **Security**\n2. **Performance**\n3. **Service Quotas**\n4. **Cost Optimization**\n5. **Resilience**"
+        "raw_output": "The skill evaluates five pillars, mirroring the AWS Well-Architected / Bedrock operational review structure:\n\n1. **Security** \u2014 guardrails, invocation logging, KB encryption/config, VPC for customization jobs, IAM least privilege, prompt injection exposure, model access\n2. **Performance** \u2014 latency/throttling, agent optimization, version drift, model lifecycle, data automation, service tiers\n3. **Service Quotas** \u2014 model RPM/TPM (incl. CRIS) and guardrail quota utilization\n4. **Cost Optimization** \u2014 inference profiles, distillation, prompt caching, provisioned throughput, batch inference, EC2 GPU utilization\n5. **Resilience** \u2014 Cross-Region Inference (CRIS) adoption"
       },
       "without_skill": {
         "eval_id": "bedrock-review-pillars",
@@ -505,125 +505,125 @@
         "assertion_results": [
           {
             "text": "contains 'Security' or contains 'security'",
-            "passed": true,
-            "evidence": "OR satisfied by: contains 'security' \u2014 Substring found: 'security'",
+            "passed": false,
+            "evidence": "No OR branch satisfied \u2014 contains 'security': Substring not found: 'security'; contains 'security': Substring not found: 'security'",
             "method": "deterministic",
             "confidence": 1.0,
             "uncertain": false
           },
           {
             "text": "contains 'Performance' or contains 'performance'",
-            "passed": true,
-            "evidence": "OR satisfied by: contains 'performance' \u2014 Substring found: 'performance'",
+            "passed": false,
+            "evidence": "No OR branch satisfied \u2014 contains 'performance': Substring not found: 'performance'; contains 'performance': Substring not found: 'performance'",
             "method": "deterministic",
             "confidence": 1.0,
             "uncertain": false
           },
           {
             "text": "contains 'Quota' or contains 'quota'",
-            "passed": true,
-            "evidence": "OR satisfied by: contains 'quota' \u2014 Substring found: 'quota'",
+            "passed": false,
+            "evidence": "No OR branch satisfied \u2014 contains 'quota': Substring not found: 'quota'; contains 'quota': Substring not found: 'quota'",
             "method": "deterministic",
             "confidence": 1.0,
             "uncertain": false
           },
           {
             "text": "contains 'Cost' or contains 'cost'",
-            "passed": true,
-            "evidence": "OR satisfied by: contains 'cost' \u2014 Substring found: 'cost'",
+            "passed": false,
+            "evidence": "No OR branch satisfied \u2014 contains 'cost': Substring not found: 'cost'; contains 'cost': Substring not found: 'cost'",
             "method": "deterministic",
             "confidence": 1.0,
             "uncertain": false
           },
           {
             "text": "contains 'Resilience' or contains 'resilience'",
-            "passed": true,
-            "evidence": "OR satisfied by: contains 'resilience' \u2014 Substring found: 'resilience'",
+            "passed": false,
+            "evidence": "No OR branch satisfied \u2014 contains 'resilience': Substring not found: 'resilience'; contains 'resilience': Substring not found: 'resilience'",
             "method": "deterministic",
             "confidence": 1.0,
             "uncertain": false
           }
         ],
-        "pass_rate": 1.0,
-        "summary": "Without skill: 100% assertions passed",
+        "pass_rate": 0.0,
+        "summary": "Without skill: 0% assertions passed",
         "execution_metrics": {
-          "tool_calls": 7,
+          "tool_calls": 0,
           "token_counts": {
-            "input_tokens": 14,
-            "output_tokens": 1386,
-            "cache_read_input_tokens": 238103,
-            "cache_creation_input_tokens": 38376
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "cache_read_input_tokens": 0,
+            "cache_creation_input_tokens": 0
           }
         },
         "timing": {
-          "elapsed_seconds": 116.64820712499204
+          "elapsed_seconds": 120.01407870801631
         },
-        "raw_output": "courtThe `bedrock-operation-review` skill evaluates **five pillars** (mirroring the Bedrock operational review structure, aligned with the AWS Well-Architected Framework):\n\n1. **Security** \u2014 guardrails, invocation logging, KB config/encryption, VPC for customization jobs, IAM least privilege, model access scoping, prompt-injection hardening.\n2. **Performance** \u2014 latency/throttling, agent perf & version drift, model lifecycle (Legacy/EOL), data automation, service tier alignment.\n3. **Service Quotas** \u2014 RPM/TPM utilization vs account quotas (incl. CRIS), guardrail/text-unit quota consumption.\n4. **Cost Optimization** \u2014 inference profiles for cost allocation, model distillation, prompt caching, prompt management, intelligent prompt routing, provisioned throughput, batch inference, EC2 GPU utilization.\n5. **Resilience** \u2014 Cross-Region Inference (CRIS) adoption."
+        "raw_output": ""
       },
-      "delta_pass_rate": 0.0
+      "delta_pass_rate": 1.0
     }
   ],
   "run_summary": {
     "with_skill": {
-      "mean_pass_rate": 0.9,
-      "stddev_pass_rate": 0.2236,
-      "mean_tokens": 239.6,
+      "mean_pass_rate": 1.0,
+      "stddev_pass_rate": 0.0,
+      "mean_tokens": 271.4,
       "mean_input_tokens": 2.8,
-      "mean_output_tokens": 239.6,
-      "mean_total_tokens": 242.4,
+      "mean_output_tokens": 271.4,
+      "mean_total_tokens": 274.2,
       "mean_tool_calls": 0.4
     },
     "without_skill": {
-      "mean_pass_rate": 0.6,
-      "stddev_pass_rate": 0.4183,
-      "mean_tokens": 481.2,
-      "mean_input_tokens": 5.2,
-      "mean_output_tokens": 481.2,
-      "mean_total_tokens": 486.4,
-      "mean_tool_calls": 2.0
+      "mean_pass_rate": 0.3,
+      "stddev_pass_rate": 0.4472,
+      "mean_tokens": 86.6,
+      "mean_input_tokens": 1.6,
+      "mean_output_tokens": 86.6,
+      "mean_total_tokens": 88.2,
+      "mean_tool_calls": 0.4
     },
     "delta": {
-      "pass_rate": 0.3,
-      "tokens": -241.6,
-      "total_tokens": -244.0,
-      "input_tokens": -2.4,
-      "tool_calls": -1.6
+      "pass_rate": 0.7,
+      "tokens": 184.8,
+      "total_tokens": 186.0,
+      "input_tokens": 1.2,
+      "tool_calls": 0.0
     },
     "cost_efficiency": {
-      "quality_delta": 0.3,
-      "cost_delta_pct": -50.2,
-      "classification": "PARETO_BETTER",
-      "emoji": "\ud83d\udfe2",
-      "description": "Skill improves quality while reducing cost"
+      "quality_delta": 0.7,
+      "cost_delta_pct": 210.9,
+      "classification": "TRADEOFF",
+      "emoji": "\ud83d\udfe1",
+      "description": "Skill improves quality but increases cost"
     },
     "estimated_cost": {
       "with_skill_per_run": {
         "input_cost": 8e-06,
-        "output_cost": 0.003594,
-        "total_cost": 0.003602,
+        "output_cost": 0.004071,
+        "total_cost": 0.004079,
         "model": "sonnet",
         "currency": "USD"
       },
       "without_skill_per_run": {
-        "input_cost": 1.6e-05,
-        "output_cost": 0.007218,
-        "total_cost": 0.007234,
+        "input_cost": 5e-06,
+        "output_cost": 0.001299,
+        "total_cost": 0.001304,
         "model": "sonnet",
         "currency": "USD"
       },
-      "per_eval_pair": 0.010836,
+      "per_eval_pair": 0.005383,
       "total_runs": 5,
-      "total_cost": 0.0542,
+      "total_cost": 0.0269,
       "model": "sonnet",
       "currency": "USD"
     }
   },
   "scores": {
-    "outcome": 0.9,
-    "process": 0.2,
-    "style": 0.9,
+    "outcome": 1.0,
+    "process": 0.4,
+    "style": 1.0,
     "efficiency": 1.0,
-    "overall": 0.75
+    "overall": 0.85
   },
   "passed": true
 }

@@ -50,16 +50,30 @@ Default the analysis window to the last 7 days unless the user specifies a range
 
 ## Step 2: Discover Bedrock Resources
 
-Per account/region, begin by checking whether any Bedrock resources exist. Call
-`bedrock.ListFoundationModels` and `bedrockagent.ListAgents` as a lightweight probe.
-**If both return empty results and CloudWatch shows no `AWS/Bedrock` metrics for the
-region, record "No Bedrock activity detected — skipping pillar analysis" for that
-region and move on. Do not generate empty findings tables for inactive regions.**
+Per account/region, begin by checking whether the account actually uses Bedrock in
+this region. **Do not use `bedrock.ListFoundationModels` as an activity signal** — it
+returns the regional model catalog available to the account and is generally non-empty
+in every supported region regardless of usage, so it is treated as catalog data only
+(see [ListFoundationModels](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_ListFoundationModels.html)).
+
+Instead, determine activity from **account-owned resources and `AWS/Bedrock` metrics**:
+- Account-owned resources: `bedrockagent.ListAgents`, `bedrockagent.ListKnowledgeBases`,
+  `bedrock.ListGuardrails`, `bedrock.ListCustomModels`,
+  `bedrock.ListProvisionedModelThroughputs`, `bedrock.ListInferenceProfiles`
+  (application-scoped), and `bedrock.ListModelCustomizationJobs`.
+- Invocation activity: `cloudwatch.ListMetrics` for the `AWS/Bedrock` namespace.
+
+**If no account-owned Bedrock resources exist AND CloudWatch shows no `AWS/Bedrock`
+metrics for the region, record "No Bedrock activity detected — skipping pillar
+analysis" for that region and move on. Do not generate empty findings tables for
+inactive regions.**
 
 For regions where Bedrock is active, collect the full resource inventory:
 
 ```
-bedrock.ListFoundationModels                   # available models + lifecycle status
+bedrock.ListFoundationModels                   # catalog reference only: model
+                                               # availability + lifecycle status
+                                               # (NOT an account-activity signal)
 bedrock.ListGuardrails / GetGuardrail          # configured guardrails
 bedrock.GetModelInvocationLoggingConfiguration
 bedrock.ListInferenceProfiles / GetInferenceProfile
@@ -68,13 +82,19 @@ bedrock.ListProvisionedModelThroughputs / GetProvisionedModelThroughput
 bedrock.ListCustomModels / GetCustomModel
 bedrock.ListModelCustomizationJobs / GetModelCustomizationJob
 bedrockagent.ListAgents / GetAgent             # agents (draft version)
-bedrockagent.ListAgentVersions / GetAgentVersion  # deployed versions — captures
+bedrockagent.ListAgentVersions / GetAgentVersion  # deployed versions — read only the
                                                # per-version model ID, orchestration
-                                               # type, and prompt override config
+                                               # type, and whether a prompt override is
+                                               # present. Do NOT read the override
+                                               # base-prompt template text.
 bedrockagent.ListAgentAliases
 bedrockagent.ListKnowledgeBases / GetKnowledgeBase
 bedrockagent.ListDataSources / GetDataSource
-bedrockagent.ListPrompts / GetPrompt           # Prompt Management
+bedrockagent.ListPrompts                       # Prompt Management: presence/metadata
+                                               # only (identifiers, versions, counts).
+                                               # Do NOT call GetPrompt — it returns
+                                               # prompt template/variant content, which
+                                               # this skill does not read.
 ```
 
 Capture per resource: identifiers, ARNs, status, creation/update timestamps,
@@ -164,7 +184,11 @@ Ref: [Security in Amazon Bedrock](https://docs.aws.amazon.com/bedrock/latest/use
   [IAM for Amazon Bedrock](https://docs.aws.amazon.com/bedrock/latest/userguide/security-iam.html)
 - **Knowledge Base logging**: KB ingestion log delivery not configured → LOW.
   CloudTrail and CloudWatch not enabled for anomaly detection → MEDIUM.
-- **Prompt injection**: prompt templates not hardened against injection → guidance.
+- **Prompt injection**: this skill does not read prompt template content, so it does
+  not assess whether individual templates are hardened. Instead, treat a guardrail
+  configured with prompt-attack filtering as the control signal — workloads with no
+  guardrail (or a guardrail lacking a prompt-attack content filter) are exposed to
+  prompt injection → MEDIUM. Provide general hardening guidance by reference only.
   [Prompt engineering best practices](https://docs.aws.amazon.com/prescriptive-guidance/latest/llm-prompt-engineering-best-practices/introduction.html)
 - **Model access**: Amazon Bedrock foundation models are enabled by default (no
   explicit access request needed) — model access should instead be controlled via

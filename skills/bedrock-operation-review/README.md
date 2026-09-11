@@ -42,7 +42,7 @@ The Agent Space's IAM role must have read access to Bedrock, Bedrock Agent, Clou
 - `bedrock:ListModelCustomizationJobs`, `bedrock:GetModelCustomizationJob`
 - `bedrock:ListAgents`, `bedrock:GetAgent`, `bedrock:ListAgentAliases` (Bedrock Agent control plane)
 - `bedrock:ListKnowledgeBases`, `bedrock:GetKnowledgeBase`, `bedrock:ListDataSources`, `bedrock:GetDataSource`
-- `bedrock:ListPrompts`, `bedrock:GetPrompt`
+- `bedrock:ListPrompts` (metadata only; the skill does not call `GetPrompt`, so prompt template content is never read)
 - `cloudwatch:ListMetrics`, `cloudwatch:GetMetricData`, `cloudwatch:GetMetricStatistics`
 - `servicequotas:GetServiceQuota`, `servicequotas:ListServiceQuotas`
 - `ec2:DescribeInstances`
@@ -63,25 +63,27 @@ The EC2 GPU utilization check (self-managed P4/P5/P5en/P6 instances) requires th
 
 ### 1. Package the skill
 
-From the `skills/` directory in this repo:
+Build the zip from **inside** the skill directory so `SKILL.md` sits at the archive
+root (not nested under a `bedrock-operation-review/` parent), and exclude
+development-only files:
 
 ```bash
-cd skills
-zip -r bedrock-operation-review.zip bedrock-operation-review/ -x 'bedrock-operation-review/evals/*'
+cd skills/bedrock-operation-review
+zip -r ../bedrock-operation-review.zip . \
+  -x 'README.md' 'CHANGELOG.md' '.skilleval.yaml' '.skilleval.yml' 'evals/*'
 ```
 
-The resulting `bedrock-operation-review.zip` contains:
+The resulting `bedrock-operation-review.zip` contains `SKILL.md` at the root:
 
 ```
-bedrock-operation-review/
-├── SKILL.md          # frontmatter + skill instructions (required)
-├── README.md
-└── references/
-    ├── best-practices-checklist.md
-    └── metrics-thresholds.md
+SKILL.md              # frontmatter + skill instructions (required)
+references/
+├── best-practices-checklist.md
+└── metrics-thresholds.md
 ```
 
-`evals/` is excluded from the upload to keep the zip small (it's only used for offline evaluation).
+`README.md`, `CHANGELOG.md`, `.skilleval.yaml`, and `evals/` are development-only files
+excluded from the upload — they keep the zip small and are not needed at runtime.
 
 Constraints (enforced at upload time):
 

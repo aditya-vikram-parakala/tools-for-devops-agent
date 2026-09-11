@@ -10,8 +10,8 @@
       "trigger_rate": 1.0,
       "passed": true,
       "mean_input_tokens": 2.0,
-      "mean_output_tokens": 17.0,
-      "mean_total_tokens": 19.0
+      "mean_output_tokens": 21.3,
+      "mean_total_tokens": 23.3
     },
     {
       "query": "Is there a skill available for auditing Amazon Bedrock workloads against best practices? Answer yes or no with the skill name; do not execute it.",
@@ -21,8 +21,8 @@
       "trigger_rate": 1.0,
       "passed": true,
       "mean_input_tokens": 2.0,
-      "mean_output_tokens": 18.0,
-      "mean_total_tokens": 20.0
+      "mean_output_tokens": 19.0,
+      "mean_total_tokens": 21.0
     },
     {
       "query": "Name the skill that covers Bedrock security, cost optimization, and quota reviews. Do not run any audit.",
@@ -32,8 +32,8 @@
       "trigger_rate": 1.0,
       "passed": true,
       "mean_input_tokens": 2.0,
-      "mean_output_tokens": 91.3,
-      "mean_total_tokens": 93.3
+      "mean_output_tokens": 30.0,
+      "mean_total_tokens": 32.0
     },
     {
       "query": "Write a Python script that sorts a list of numbers",
@@ -43,8 +43,8 @@
       "trigger_rate": 0.0,
       "passed": true,
       "mean_input_tokens": 2.7,
-      "mean_output_tokens": 362.7,
-      "mean_total_tokens": 365.3
+      "mean_output_tokens": 433.3,
+      "mean_total_tokens": 436.0
     },
     {
       "query": "What's the weather forecast for Sydney this weekend?",
@@ -54,19 +54,19 @@
       "trigger_rate": 0.0,
       "passed": true,
       "mean_input_tokens": 2.0,
-      "mean_output_tokens": 122.3,
-      "mean_total_tokens": 124.3
+      "mean_output_tokens": 101.0,
+      "mean_total_tokens": 103.0
     },
     {
       "query": "Create a CloudFormation template for an S3 bucket",
       "should_trigger": false,
-      "trigger_count": 0,
+      "trigger_count": 1,
       "run_count": 3,
-      "trigger_rate": 0.0,
+      "trigger_rate": 0.3333,
       "passed": true,
-      "mean_input_tokens": 4.0,
-      "mean_output_tokens": 907.7,
-      "mean_total_tokens": 911.7
+      "mean_input_tokens": 5.3,
+      "mean_output_tokens": 1548.3,
+      "mean_total_tokens": 1553.7
     }
   ],
   "summary": {
@@ -75,17 +75,17 @@
     "failed": 0,
     "trigger_precision": 1.0,
     "no_trigger_precision": 1.0,
-    "mean_total_tokens_per_run": 255.6,
+    "mean_total_tokens_per_run": 361.5,
     "estimated_cost": {
       "per_run": {
-        "input_cost": 7e-06,
-        "output_cost": 0.003798,
-        "total_cost": 0.003805,
+        "input_cost": 8e-06,
+        "output_cost": 0.005382,
+        "total_cost": 0.00539,
         "model": "sonnet",
         "currency": "USD"
       },
       "total_runs": 6,
-      "total_cost": 0.0228,
+      "total_cost": 0.0323,
       "model": "sonnet",
       "currency": "USD"
     }

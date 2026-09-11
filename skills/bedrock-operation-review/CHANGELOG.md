@@ -1,11 +1,12 @@
 # Changelog
 
-## [1.0.0] - 2026-09-10
+## [1.0.0] - 2026-09-11
 ### Added
 - Initial release adapted from AWS Support Specialist skill
 - Comprehensive Amazon Bedrock operational review aligned with the AWS Well-Architected Framework and Bedrock best practices
 - Five review pillars: Security, Performance, Service Quotas, Cost Optimization, and Resilience
-- Resource discovery across foundation models, guardrails, inference profiles, prompt routers, provisioned throughput, custom models, agents, knowledge bases, data sources, and Prompt Management
+- Resource discovery across foundation models (catalog reference only), guardrails, inference profiles, prompt routers, provisioned throughput, custom models, agents, knowledge bases, data sources, and Prompt Management (metadata only)
+- Inactive-region detection based on account-owned resources and `AWS/Bedrock` metrics (the foundation-model catalog is not treated as an activity signal)
 - CloudWatch metric collection and threshold-based classification (Normal/Warning/Critical) in the `AWS/Bedrock` namespace
 - Service quota utilization analysis (RPM/TPM including CRIS) via Service Quotas API
 - Cost optimization checks: prompt caching, model distillation, batch inference, provisioned throughput, intelligent prompt routing, and self-managed EC2 GPU utilization
