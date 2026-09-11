@@ -79,5 +79,5 @@ If "CloudWatch Agent Installed" = No, `nvidia_smi_*` metrics are absent and GPU 
 | State | Meaning | Action |
 |---|---|---|
 | Active | Fully supported | No action |
-| Legacy | Retirement announced; ≥ 6 months before EOL | MEDIUM — plan upgrade, test new version in non-prod |
-| End-of-Life | No longer available | HIGH — migrate immediately |
+| Legacy | Retirement announced | MEDIUM — plan upgrade, test new version in non-prod, migrate before EOL |
+| End-of-Life | No longer available | HIGH — migrate immediately unless private arrangement with model provider exists |
