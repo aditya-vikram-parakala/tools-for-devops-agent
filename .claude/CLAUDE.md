@@ -104,7 +104,7 @@ Every skill must include a `CHANGELOG.md` tracking version history. Use semantic
 
 ### Evaluation Tests
 
-Every skill should include evaluation tests results using our skill evaluation tool:
+Every skill should include evaluation test results using our skill evaluation tool. This tool isn't published in this repo yet — see the "Test Your Skill" section in [CONTRIBUTING.md](../CONTRIBUTING.md) for how to get a skill evaluated (AWS employees follow the internal guidelines; external contributors tag `@aws/tools-for-devops-agent-admins` on the issue or PR).
 
 - Add the `evals/` directory. For each test type (structure, best-practices, functional), it's enough to include the last version of each test type
 - Skills should achieve a passing score before being merged
@@ -164,7 +164,7 @@ Only skills are uploaded to DevOps Agent as zips (custom agents are created via 
 
 ```bash
 cd skills
-zip -r <skill-name>.zip <skill-name>/ -i '*.md' '*.txt' '*.json' '*.yaml' '*.yml' '*.xml' '*.csv' '*.tsv' '*.html' '*.htm' '*.png' '*.jpg' '*.jpeg' '*.gif' '*.svg' '*.webp' '*.pdf' -x '*/.claude/*' '*/scripts/*' '*/README.md' '*/CHANGELOG.md' '*/evals/*'
+zip -r <skill-name>.zip <skill-name>/ -i '*.md' '*.txt' '*.json' '*.yaml' '*.yml' '*.xml' '*.csv' '*.tsv' '*.html' '*.htm' '*.png' '*.jpg' '*.jpeg' '*.gif' '*.svg' '*.webp' '*.pdf' -x '*/.claude/*' '*/scripts/*' '*/README.md' '*/.skilleval.yaml' '*/.skilleval.yml' '*/CHANGELOG.md' '*/evals/*'
 ```
 
 ## Git Conventions
