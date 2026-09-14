@@ -1,34 +1,50 @@
 # Project Conventions
 
-This repository consolidates AWS DevOps Agent skills. Follow these conventions when contributing.
+This repository consolidates open-source tools for AWS DevOps Agent — skills, custom agents, and MCP servers, plus supporting infrastructure templates. Follow these conventions when contributing. See [CONTRIBUTING.md](../../CONTRIBUTING.md) for the full contribution workflow.
 
 ## Key References
 
 - [Agent Skills spec](https://agentskills.io/home) — the open standard this project follows for skill structure
 - [AWS DevOps Agent Skills documentation](https://docs.aws.amazon.com/devopsagent/latest/userguide/about-aws-devops-agent-devops-agent-skills.html) — official AWS docs on creating and uploading skills
-- [Agent Skill Eval](https://github.com/aws-samples/sample-agent-skill-eval) — evaluation framework for testing skills
+- [AWS DevOps Agent custom agents documentation](https://docs.aws.amazon.com/devopsagent/latest/userguide/working-with-devops-agent-custom-agents-index.html) — official AWS docs on custom agents
+- [AGENTS.md specification](https://agents.md/) — the open standard for custom agent definitions
+- [Model Context Protocol](https://modelcontextprotocol.io) — the open standard for MCP servers
+- [Connecting MCP servers to DevOps Agent](https://docs.aws.amazon.com/devopsagent/latest/userguide/configuring-integrations-and-knowledge-connecting-mcp-servers.html) — official AWS docs on registering MCP servers
 
 ## Repository Structure
 
 ```
-sample-devops-agent-tools/
-├── README.md                 # Project overview with skills table
+tools-for-devops-agent/
+├── README.md                 # Project overview with skills/agents/MCP tables
+├── CONTRIBUTING.md           # Contribution guidelines
+├── llms.txt                  # Structured repo overview for AI tools
 ├── .gitignore                # Root-level ignores
+├── cloudformation/
+│   └── devops-agent-skill-policies.yaml  # IAM policies skills require
+├── docs/                     # GitHub Pages (mkdocs) documentation site
 ├── skills/
 │   ├── .gitignore            # Allowlist for DevOps Agent supported extensions only
 │   └── <skill-name>/
 │       ├── SKILL.md          # Required: main skill instructions with frontmatter
 │       ├── README.md         # Skill documentation (purpose, prompts, upload instructions)
 │       ├── CHANGELOG.md      # Version history
-│       ├── .skilleval.yaml   # Evaluation configuration for Agent Skill Eval
 │       ├── evals/            # Required: evaluation queries and benchmarks
 │       ├── assets/           # Optional: images, diagrams, data files
 │       └── references/       # Optional: supplementary reference docs
+├── custom-agents/
+│   └── <agent-name>/
+│       ├── SYSTEM_PROMPT.md  # Required: the agent's system prompt
+│       ├── README.md         # Agent documentation
+│       └── CHANGELOG.md      # Version history
+└── mcp/
+    └── <server-name>/
+        ├── README.md         # Server documentation and deployment steps
+        └── ...               # Server implementation and deployment assets
 ```
 
 ## Writing Skills
 
-Skills should follow both the [Agent Skills spec](https://agentskills.io/home) best practices and [AWS DevOps Agent best practices](https://docs.aws.amazon.com/devopsagent/latest/userguide/about-aws-devops-agent-devops-agent-skills.html).
+Skills live under `skills/` and should follow both the [Agent Skills spec](https://agentskills.io/home) best practices and [AWS DevOps Agent best practices](https://docs.aws.amazon.com/devopsagent/latest/userguide/about-aws-devops-agent-devops-agent-skills.html). Skills are the most common contribution type; the guidance below is the most detailed for that reason.
 
 ### SKILL.md Requirements
 
@@ -88,24 +104,38 @@ Every skill must include a `CHANGELOG.md` tracking version history. Use semantic
 
 ### Evaluation Tests
 
-Every skill should include evaluation tests using the [Agent Skill Eval](https://github.com/aws-samples/sample-agent-skill-eval) framework:
+Every skill should include evaluation test results using our skill evaluation tool. This tool isn't published in this repo yet — see the "Test Your Skill" section in [CONTRIBUTING.md](../../CONTRIBUTING.md) for how to get a skill evaluated (AWS employees follow the internal guidelines; external contributors tag `@aws/tools-for-devops-agent-admins` on the issue or PR).
 
-- Add a `.skilleval.yaml` configuration file in the skill root with the following content:
-  ```yaml
-  audit:
-    ignore:
-      - STR-016    # README alongside SKILL.md is intentional
-  ```
-- Add evaluation queries and benchmarks in the `evals/` directory:
-  - `evals.json` — functional tests (scenarios with assertions)
-  - `eval_queries.json` — trigger tests (only `"should_trigger": false` tests are required; activation is implied by successful functional tests)
-- Tests should cover both audit (structural quality) and functional (runtime behavior) evaluations
+- Add the `evals/` directory. For each test type (structure, best-practices, functional), it's enough to include the last version of each test type
 - Skills should achieve a passing score before being merged
 - Run evaluations locally and test with DevOps Agent before submitting changes
 
+## Writing Custom Agents
+
+Custom agents live under `custom-agents/<agent-name>/` and pair a system prompt with the tools and skills the agent uses. See the [DevOps Agent custom agents documentation](https://docs.aws.amazon.com/devopsagent/latest/userguide/working-with-devops-agent-custom-agents-index.html) and the [AGENTS.md specification](https://agents.md/).
+
+Each custom agent directory must contain:
+
+- `SYSTEM_PROMPT.md` — the agent's system prompt. Structure it with clear sections (e.g., Goal, Approach, Constraints, Output). Reference any skills the agent relies on by name so it loads them at runtime.
+- `README.md` — documents the agent's purpose, key capabilities, prerequisites (IAM permissions, support plans, required skills), step-by-step instructions for creating the agent in the DevOps Agent web app, how to execute it, and related links.
+- `CHANGELOG.md` — version history using semantic versioning (same format as skills).
+
+Test the agent by running relevant scenarios with and without it, multiple times, and compare output quality and consistency against asking DevOps Agent the same question via chat.
+
+## Writing MCP Servers
+
+MCP servers live under `mcp/<server-name>/` and connect the agent to external systems and data sources over the [Model Context Protocol](https://modelcontextprotocol.io). Review the [process for connecting MCP servers to DevOps Agent](https://docs.aws.amazon.com/devopsagent/latest/userguide/configuring-integrations-and-knowledge-connecting-mcp-servers.html) before you build.
+
+Server implementations vary (SAM applications, Lambda deployments, source packages, deploy scripts), so this directory is not held to a fixed file layout. At minimum, each MCP server directory must contain:
+
+- `README.md` — documents what the server does, its tools, prerequisites and IAM scoping, and step-by-step deployment and registration instructions.
+- `CHANGELOG.md` — version history (recommended, same format as skills).
+
+Prefer running standard, pinned upstream server packages over forked code where possible, and enforce least-privilege IAM and read-only access by default. There is no MCP-specific evaluation tool yet — test the server manually and document how you validated it.
+
 ## Allowed File Extensions
 
-Only these extensions are permitted inside skill directories (enforced by `skills/.gitignore` and the DevOps Agent upload validator):
+Only these extensions are permitted inside **skill** directories (enforced by `skills/.gitignore` and the DevOps Agent upload validator). This constraint applies to skills because they are uploaded to DevOps Agent as zips; `custom-agents/` and `mcp/` are not subject to it:
 
 .md, .txt, .json, .yaml, .yml, .xml, .csv, .tsv, .html, .htm, .png, .jpg, .jpeg, .gif, .svg, .webp, .pdf
 
@@ -121,7 +151,7 @@ Only these extensions are permitted inside skill directories (enforced by `skill
 2. Add a `SKILL.md` with frontmatter and step-by-step instructions following the writing guidelines above.
 3. Add a `README.md` following the structure described above.
 4. Add a `CHANGELOG.md` starting at version 1.0.0.
-5. Add evaluation tests (`.skilleval.yaml` and `evals/` directory).
+5. Add evaluation tests (`evals/` directory).
 6. Test the skill with DevOps Agent before submitting.
 7. Update the root `README.md` skills table with the new skill's name, description, agent types, author, and docs link.
 8. Update the `llms.txt` file at the repo root — add the new skill to the "Available Skills" section following the existing format: `- [Skill Name](skills/<name>/SKILL.md): One-line description`.
@@ -131,12 +161,12 @@ Only these extensions are permitted inside skill directories (enforced by `skill
 
 The `llms.txt` file at the repo root provides AI tools with a structured overview of this repository. Keep it in sync:
 
-- **Available Skills section**: Update whenever a skill is added, removed, or renamed (step 8 above).
+- **Available Skills / Available Custom Agents / Available MCP Servers sections**: Update the matching section whenever a tool of that type is added, removed, or renamed (for skills, this is step 8 above).
 - **Repository Structure section**: Update whenever the directory structure conventions change (e.g., new required files, new directories, renamed paths).
 
 ## Zipping for Upload
 
-When zipping a skill for upload to DevOps Agent, include only allowed extensions and exclude non-skill files:
+Only skills are uploaded to DevOps Agent as zips (custom agents are created via the web app; MCP servers are deployed and registered as endpoints). When zipping a skill for upload, include only allowed extensions and exclude non-skill files:
 
 ```bash
 cd skills
@@ -145,6 +175,6 @@ zip -r <skill-name>.zip <skill-name>/ -i '*.md' '*.txt' '*.json' '*.yaml' '*.yml
 
 ## Git Conventions
 
-- Push to a new branch for changes; use merge requests for review.
+- Push to a new branch for changes; open a pull request for review.
 - Commit messages should be concise and descriptive.
 - Do not commit zip files (they are gitignored).
