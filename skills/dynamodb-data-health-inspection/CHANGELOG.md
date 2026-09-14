@@ -1,5 +1,43 @@
 # Changelog
 
+## 1.1.0
+
+Recalibrated against 11,677 real Amazon DynamoDB support cases. The four dimensions
+and the rule taxonomy held up; the weighting and two gating conditions did not.
+
+- **HK-02 no longer requires the key-range throttle metric.** It gated a confirmed hot
+  partition on `*KeyRangeThroughputThrottleEvents > 0`, but across ~1,275 real
+  hot-partition cases throttling was the presenting symptom in 93.6% while the key-range
+  metric was cited in only 12.2% and Contributor Insights in 63.5%. The rule now accepts
+  either the key-range metric (strong evidence) or generic throttle events plus
+  Contributor Insights concentration (corroborating), and states which it had.
+- **Reordered hot-key remediation to match how real cases resolve** - retry with
+  backoff (53.4% of cases) and capacity headroom (42.8%) before write sharding (37.8%),
+  while labelling the first two as mitigations and sharding as the cure so operators do
+  not stop at step 2 and meet the same ceiling at the next peak.
+- **TTL-05 now explains asynchronous deletion.** Deletion delay is the single most
+  common TTL complaint in the data (21.2% of 520 TTL cases), with root causes recorded as
+  "asynchronous ttl processing" and "backend capacity limitations". The skill never said
+  that TTL throughput is bounded by background capacity and cannot be accelerated by the
+  customer. It now leads with the fix that is actually in the operator's control - filter
+  expired items out of read paths - and warns against a scan-and-delete job.
+- **IX-01 recalibrated.** A genuinely unused index is the *rarest* index problem in the
+  data (~3% of index cases), yet it was the rule that produced a false High-severity
+  finding during agent testing. It now phrases the action as "confirm with the owning
+  application, then delete", never "delete this index".
+- **IX-08 promoted.** Item collection limits are the *most* common index problem (~28%
+  of index cases, ~10x the unused-index rate). The skill now estimates collection size
+  whenever LSIs exist and prioritises this above projection and utilization findings.
+- **Added IX-10, write amplification.** ~101 cases arrive as "unexpected WCU
+  consumption" with no throttling - a question the per-index rules did not answer. Fires
+  when summed GSI write capacity is >= 1.5x the base table's, and explains the
+  write-multiplication arithmetic plus sparse indexes as a remedy.
+
+Measured scope: the four dimensions match 18.3% of the corpus (2,133 cases). Hot keys
+are the most severe dimension (46% at sev1-2). The largest untouched families are
+correctly out of scope per the skill's own boundaries - quotas 35.9%, latency 34.9%,
+configuration 21.5%, authorization 14.0%.
+
 ## 1.0.5
 
 Replaces a requirement the real agent twice declined to follow with a design that

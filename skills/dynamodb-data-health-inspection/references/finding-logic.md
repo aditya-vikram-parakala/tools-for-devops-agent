@@ -167,8 +167,23 @@ though it had been assessed and found healthy. Mark the hot-key dimension ❓, n
 
 ### HK-02 [A] · Hot key confirmed with throttling · **High**
 
-Trigger: top contributor's value ≥ **3×** the second contributor's, **and**
-(`throttling.key_range.read_sum_14d > 0` or `write_sum_14d > 0`).
+Trigger: top contributor's value ≥ **3×** the second contributor's, **and** throttling
+is observed — satisfied by **either** of:
+
+| Evidence | Strength |
+|---|---|
+| `throttling.key_range.*_sum_14d > 0` | **Strong** — the key-range metric proves a single partition exceeded its ceiling |
+| `throttling.key_range` is `NoData`/`NotAvailable` **and** `ReadThrottleEvents`/`WriteThrottleEvents`/`ThrottledRequests > 0` | **Corroborating** — throttling is real but the partition-level attribution comes from Contributor Insights alone |
+
+Do not require the key-range metric. Across ~1,275 real hot-partition support cases,
+throttling was the presenting symptom in **93.6%** but the key-range metric was cited
+in only **12.2%**, while Contributor Insights was cited in **63.5%**. Gating this rule
+on key-range alone would suppress the majority of genuine hot partitions.
+
+State which evidence you had. With only the corroborating path, say the partition-level
+attribution rests on Contributor Insights and add: *"enable an alarm on
+`WriteKeyRangeThroughputThrottleEvents >= 1` to get direct partition-level confirmation
+on the next occurrence."*
 
 > **Partition key `<key_digest>` is a confirmed hot partition.** Contributor
 > Insights ranks it at `<top_value>` versus `<second_value>` for the next key
@@ -179,11 +194,21 @@ Trigger: top contributor's value ≥ **3×** the second contributor's, **and**
 > aggregate. Aggregate consumed capacity over the same window was
 > `<consumed_summary>`.
 >
-> Remediation: apply write sharding — append a calculated suffix to the partition
-> key so the traffic spans multiple partitions, and scatter-gather on read. Handle
-> `UnprocessedItems` from `BatchWriteItem` with exponential backoff plus full
-> jitter. For a read-heavy hot key, add DAX or an application cache in front of the
-> table.
+> Remediation, in the order real cases are resolved:
+> 1. **Handle the throttles the client already sees** — retry with exponential backoff
+>    plus full jitter, and resubmit `UnprocessedItems` from `BatchWriteItem`. This is
+>    the single most common resolution and it stops data loss today, before any
+>    re-modelling.
+> 2. **Give the table headroom** — raise provisioned capacity (which also adds backend
+>    partitions) or move to on-demand. This buys time; it does not fix a key whose
+>    traffic exceeds one partition's ceiling.
+> 3. **Raise the key's cardinality** — write sharding: append a calculated suffix to the
+>    partition key so traffic spans partitions, and scatter-gather on read. This is the
+>    durable fix, and the only one that removes the ceiling.
+> 4. **For a read-heavy hot key**, add DAX or an application cache in front of the table.
+>
+> Steps 1 and 2 are mitigations and step 3 is the cure — say so, so the operator does
+> not stop at step 2 and meet the same ceiling at the next traffic peak.
 
 ### HK-03 [A] · Traffic concentration without throttling · **Medium**
 
@@ -326,10 +351,23 @@ Trigger: fraction of sampled items expired **more than 7 days ago** > **10 %**.
 > by `Query` and `Scan` unless the application filters them out. Recency breakdown:
 > `<recency_breakdown>`.
 >
-> Remediation: exclude expired items in read paths with a `FilterExpression` on the
-> TTL attribute so the application never serves logically deleted data. If the
-> backlog persists across inspections, open a support case — a sustained backlog
-> beyond the documented window is not something the customer can accelerate.
+> **TTL deletion is asynchronous and its throughput is bounded by background capacity
+> DynamoDB allocates — it is not proportional to your table's provisioned capacity, and
+> it cannot be accelerated by the customer.** A backlog is therefore expected behaviour
+> up to a point, not a defect to fix.
+>
+> Remediation:
+> 1. **Stop serving expired data now.** Add a `FilterExpression` on the TTL attribute in
+>    every read path so the application never returns logically deleted items,
+>    regardless of when DynamoDB gets to them. This is the fix that matters; it is under
+>    your control and it removes the correctness problem immediately.
+> 2. **If storage reclamation is the concern** and the backlog is sustained across
+>    inspections, open a support case. A persistent backlog well beyond the documented
+>    window is an AWS-side capacity matter.
+> 3. **Do not** delete expired items yourself with a scan-and-delete job unless you
+>    genuinely need the space back sooner — it consumes write capacity that TTL
+>    deletion would have provided free.
+>
 > Confidence: `<confidence>`.
 
 ### TTL-06 [A] · TTL not configured · **Info**
@@ -369,6 +407,12 @@ means the metric published no data and proves nothing) — **and**
 > next week. If `metric_coverage_days < 30`, the correct rule is **IX-02** — no
 > exceptions, no "but the read count is clearly zero". A zero over four hours is not
 > evidence of thirty days of disuse.
+>
+> **Calibration from real cases:** a genuinely unused index is the *rarest* index
+> problem in support data — roughly 3% of index-related cases, against 28% for item
+> collection limits and 22% for over-broad projections. So treat a zero read count as
+> a prompt to *ask the owner*, not as a conclusion. Always phrase the recommendation as
+> "confirm with the owning application, then delete" — never "delete this index".
 
 > **GSI `<index_name>` served zero reads in 30 days while consuming
 > `<write_units>` write units.** An unread index is pure cost: every write to the
@@ -482,6 +526,14 @@ Trigger: LSI `projection_type == "ALL"`.
 
 Trigger: table has ≥ 1 LSI **and** the estimated item collection size ≥ **8 GB**.
 
+> **This is the highest-value index check.** Item collection limits account for ~28% of
+> index-related support cases — nearly ten times the rate of genuinely unused indexes.
+> When a table has LSIs, estimate the collection size even if nothing else looks wrong,
+> and prioritise this finding above projection and utilization findings in the report.
+> The failure it predicts is abrupt and key-specific: writes to one partition key start
+> failing while every other key keeps working, which reads to the application as
+> intermittent and is hard to attribute without this check.
+
 > **An item collection on this table is estimated at `<estimate>`, against the
 > 10 GB limit that applies to tables with local secondary indexes.** The estimate
 > covers partition key `<key_digest>`, derived from `<method>`. All items sharing a
@@ -497,6 +549,29 @@ Trigger: table has ≥ 1 LSI **and** the estimated item collection size ≥ **8 
 > Remediation: reduce what the LSIs project, move the access pattern to a GSI (no
 > item-collection limit), or re-model so this partition key holds fewer or smaller
 > items.
+
+### IX-10 [A] · Write amplification from indexes · **Medium**
+
+Trigger: summed GSI `consumed_write_sum_30d` across all indexes ≥ **1.5×** the base
+table's `consumed_write_sum_30d`.
+
+Emit this whenever the ratio is met, even if no individual index looks wrong. It
+answers a question customers arrive with directly — *"why is my write cost higher than
+the writes I'm doing?"* — which the per-index rules above do not answer on their own.
+
+> **Indexes are consuming `<ratio>`× the base table's write capacity**
+> (`<gsi_total>` write units across `<n>` index(es) versus `<base>` on the table over
+> `<window>`). Every write to the base table that touches an index's key or projected
+> attributes is replicated into that index and billed again. With `<n>` index(es) on
+> this table, a single logical write costs up to `<n+1>` physical writes, which is why
+> the consumed capacity exceeds what the application appears to be writing.
+> Per-index write consumption: `<per_index_breakdown>`.
+>
+> Remediation: narrow projections to the attributes each index's queries actually read
+> (`KEYS_ONLY` or `INCLUDE` instead of `ALL`), and remove indexes no query path uses.
+> Where an index only needs to cover a subset of items, a **sparse index** — keying on
+> an attribute that most items omit — avoids replicating writes for items the index does
+> not need to serve.
 
 ### IX-09 [A] · No secondary indexes · **Info**
 

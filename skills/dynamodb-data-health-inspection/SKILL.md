@@ -3,7 +3,7 @@ name: dynamodb-data-health-inspection
 description: "Inspect Amazon DynamoDB tables for data-level health issues that table-level metrics cannot reveal: hot partition keys, item size distribution (items near the 400 KB limit, attribute bloat, skew), TTL effectiveness (enabled but reclaiming nothing, missing or malformed TTL attributes, expired-item backlog), and GSI/LSI utilization (unused or write-only indexes, over-broad projections, item collections near the 10 GB LSI limit). Use when a table throttles while consumed capacity is low, storage or cost climbs unexplained, TTL is enabled but storage keeps growing, items may approach 400 KB, or when asked to review a table's data health, item distribution, index utilization, or schema anti-patterns. Read-only: control-plane, CloudWatch, and Contributor Insights analysis first, then bounded, consent-gated, value-redacting Scan sampling; never a full-table scan or a mutation. Does NOT tune capacity, request quota increases, audit alarm/PITR/backup/capacity-mode config, or diagnose latency or IAM AccessDenied."
 metadata:
   author: apparaka
-  version: "1.0.5"
+  version: "1.1.0"
   aws-devops-agent-skills.agent-types: "Chat tasks, Prevention, Incident RCA"
   aws-devops-agent-skills.aws-services: "Amazon DynamoDB, Amazon CloudWatch"
   aws-devops-agent-skills.technical-domains: "Database"

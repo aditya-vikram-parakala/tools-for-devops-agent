@@ -3,7 +3,9 @@
     "id": "ddb-data-health-smoke-test",
     "prompt": "Read table-context.json. List the table names and their regions. No analysis needed.",
     "expected_output": "Lists every table from files/table-context.json with the region exactly as defined in the file.",
-    "files": ["files/table-context.json"],
+    "files": [
+      "files/table-context.json"
+    ],
     "assertions": [
       "contains 'orders-prod'",
       "contains 'sessions-prod'",
@@ -40,7 +42,9 @@
     "id": "ddb-data-health-ttl-not-deleting",
     "prompt": "Read table-context.json. TTL is enabled on sessions-prod but storage is not going down. Using the skill's finding logic, explain what the data shows and what the root cause is. Do not call any AWS APIs; reason only from the file.",
     "expected_output": "Identifies that TimeToLiveDeletedItemCount is 0 over 14 days (TTL-01) and that the sample shows 947 of 1000 items store expiresAt at millisecond scale rather than Unix epoch seconds (TTL-04 malformed_scale), so TTL silently never expires them. Recommends correcting the writer to epoch seconds and backfilling.",
-    "files": ["files/table-context.json"],
+    "files": [
+      "files/table-context.json"
+    ],
     "assertions": [
       "contains 'epoch' or contains 'seconds'",
       "contains 'millisecond' or contains 'ms'",
@@ -53,7 +57,9 @@
     "id": "ddb-data-health-unused-index",
     "prompt": "Read table-context.json. For orders-prod, which secondary index is costing money without being used, and what evidence supports that? Do not call any AWS APIs; reason only from the file.",
     "expected_output": "Identifies orders-by-status: zero consumed read capacity over 30 days with 42.8M consumed write units, 379 GB index size at 0.92x amplification, ALL projection, with 30 days of metric coverage. Notes orders-by-date is in active use and should not be flagged as unused.",
-    "files": ["files/table-context.json"],
+    "files": [
+      "files/table-context.json"
+    ],
     "assertions": [
       "contains 'orders-by-status'",
       "contains '30' or contains 'thirty'",
@@ -65,7 +71,9 @@
     "id": "ddb-data-health-hot-key-authority",
     "prompt": "Read table-context.json. For orders-prod, is there a hot partition key, and what proves it? Separately, does the sampled partition key distribution prove a hot key? Do not call any AWS APIs; reason only from the file.",
     "expected_output": "Confirms a hot key from Contributor Insights (top contributor c#8f3a2b91 at 184320 versus 21400 for the next, about 8.6x) correlated with 14622 WriteKeyRangeThroughputThrottleEvents. States that the sampled distribution does NOT prove a hot key because a Scan returns items in partition-layout order, so sampling measures storage distribution rather than traffic distribution, and Contributor Insights is the authoritative source.",
-    "files": ["files/table-context.json"],
+    "files": [
+      "files/table-context.json"
+    ],
     "assertions": [
       "contains 'Contributor Insights' or contains 'contributor insights'",
       "contains 'KeyRange' or contains 'key range' or contains 'key-range'",
@@ -77,7 +85,9 @@
     "id": "ddb-data-health-accessdenied-not-healthy",
     "prompt": "Read table-context.json. For audit-log-prod, the hot_keys check returned AccessDenied and the operator declined sampling. According to the skill, how must the report represent the hot key dimension and the overall health rating? Do not call any AWS APIs; reason only from the file.",
     "expected_output": "States the hot key dimension must be marked not assessed (never healthy or a pass) because AccessDenied means the state is unknown, that the Unable to verify template applies, and that the health rating is capped at Medium because of the AccessDenied input and the declined sampling.",
-    "files": ["files/table-context.json"],
+    "files": [
+      "files/table-context.json"
+    ],
     "assertions": [
       "contains 'AccessDenied' or contains 'access denied'",
       "contains 'not assessed' or contains 'Unable to verify' or contains 'unknown'",
@@ -88,7 +98,9 @@
     "id": "ddb-data-health-stale-item-count",
     "prompt": "Read table-context.json. For freshly-loaded-prod, ItemCount and TableSizeBytes are both 0. According to the skill, should sampling be skipped because the table looks empty? Do not call any AWS APIs; reason only from the file.",
     "expected_output": "States that sampling must NOT be skipped: ItemCount and TableSizeBytes refresh only about every six hours, and ConsumedWriteCapacityUnits of 8884 proves writes occurred, so the metadata is stale rather than the table being empty. Notes the sample should be sized from the >1M tier and the cost estimate derived from measured ConsumedCapacity per page.",
-    "files": ["files/table-context.json"],
+    "files": [
+      "files/table-context.json"
+    ],
     "assertions": [
       "contains 'stale' or contains 'six hours' or contains '6 hours'",
       "contains '8884' or contains '8,884' or contains 'write'",
@@ -100,7 +112,9 @@
     "id": "ddb-data-health-ci-enabled-no-data",
     "prompt": "Read table-context.json. For freshly-loaded-prod, Contributor Insights is ENABLED with four rules but returned zero contributors. According to the skill, how must the hot key dimension be reported? Do not call any AWS APIs; reason only from the file.",
     "expected_output": "States this is NoData rather than NotConfigured, that HK-06 applies, that the hot key dimension must be marked not determinable / question mark and never healthy or a pass, because an enabled rule with an empty window is not evidence that no hot key exists.",
-    "files": ["files/table-context.json"],
+    "files": [
+      "files/table-context.json"
+    ],
     "assertions": [
       "contains 'NoData' or contains 'no data'",
       "contains 'not determinable' or contains 'undetermined' or contains 'cannot' or contains 'not assessed'",
@@ -111,7 +125,9 @@
     "id": "ddb-data-health-null-amplification",
     "prompt": "Read table-context.json. For freshly-loaded-prod, the orders-by-status GSI has projection_type ALL but amplification_ratio is null. According to the skill, does the over-broad-projection check pass, fail, or something else? Do not call any AWS APIs; reason only from the file.",
     "expected_output": "States it is neither a pass nor a silent skip: because amplification_ratio is null from stale IndexSizeBytes/TableSizeBytes, IX-04 must still be emitted at Low severity with the ratio replaced by an explanation that it could not be computed and a note to re-run once metadata populates. A threshold that cannot be evaluated is not a passing threshold.",
-    "files": ["files/table-context.json"],
+    "files": [
+      "files/table-context.json"
+    ],
     "assertions": [
       "contains 'IX-04' or contains 'projection'",
       "contains 'null' or contains 'not be computed' or contains 'cannot be computed' or contains 'stale'",
@@ -119,10 +135,40 @@
     ]
   },
   {
+    "id": "ddb-data-health-hotkey-without-keyrange-metric",
+    "prompt": "Read table-context.json. For legacy-sessions-prod, Contributor Insights shows one partition key at 402100 versus 18400 for the next, throttle events are present, but the key-range throttle metric is NotAvailable. According to the skill, is this a confirmed hot partition or not? Do not call any AWS APIs; reason only from the file.",
+    "expected_output": "Confirms HK-02 applies via the corroborating evidence path: the key-range metric is not required, because generic throttle events plus sharp Contributor Insights concentration satisfy the trigger. States that partition-level attribution rests on Contributor Insights and recommends alarming on WriteKeyRangeThroughputThrottleEvents for direct confirmation next time.",
+    "files": [
+      "files/table-context.json"
+    ],
+    "assertions": [
+      "contains 'HK-02' or contains 'confirmed hot'",
+      "contains 'Contributor Insights' or contains 'contributor insights'",
+      "contains 'corroborat' or contains 'not required' or contains 'either'",
+      "contains 'alarm' or contains 'KeyRange'"
+    ]
+  },
+  {
+    "id": "ddb-data-health-write-amplification",
+    "prompt": "Read table-context.json. For orders-prod, the base table consumed 20100000 write units while its two GSIs consumed 42800000 and 38200000. According to the skill, what finding does this trigger and how should it be explained? Do not call any AWS APIs; reason only from the file.",
+    "expected_output": "Identifies IX-10 write amplification: combined GSI write capacity is about 4x the base table's, above the 1.5x trigger. Explains that each write touching an index's keys or projected attributes is replicated and billed again, so one logical write costs up to three physical writes with two indexes. Recommends narrowing projections, removing unused indexes, and sparse indexes.",
+    "files": [
+      "files/table-context.json"
+    ],
+    "assertions": [
+      "contains 'IX-10' or contains 'amplification'",
+      "contains 'projection' or contains 'narrow'",
+      "contains 'replicat' or contains 'each write' or contains 'per write'",
+      "contains 'sparse' or contains 'remov' or contains 'delete'"
+    ]
+  },
+  {
     "id": "ddb-data-health-item-size-limit",
     "prompt": "Read table-context.json. For orders-prod, are any items close to the DynamoDB item size limit, and which attributes are driving item size? Do not call any AWS APIs; reason only from the file.",
     "expected_output": "Identifies 2 sampled items above 350 KB with a max of 372900 bytes against the 400 KB hard limit, and names lineItems (61.4 percent of sampled bytes) as the dominant attribute, followed by shippingHistory and customerNotes. Notes the finding is sampled and carries a confidence annotation.",
-    "files": ["files/table-context.json"],
+    "files": [
+      "files/table-context.json"
+    ],
     "assertions": [
       "contains '400' or contains '400 KB'",
       "contains 'lineItems'",
