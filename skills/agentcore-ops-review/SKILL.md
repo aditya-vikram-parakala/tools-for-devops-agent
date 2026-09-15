@@ -12,7 +12,7 @@ description: Comprehensive operational review procedures for Amazon Bedrock
   audit", "review my AgentCore runtimes", "AgentCore health check", "audit my agent
   memory pipelines", or "ORR for AgentCore".
 metadata:
-  author: agentcore-ops-review
+  author: pamvas
   version: "1.0.0"
   aws-devops-agent-skills.agent-types: "Chat tasks, Evaluation"
   aws-devops-agent-skills.aws-services: "Amazon Bedrock AgentCore"

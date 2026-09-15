@@ -64,30 +64,32 @@ This skill assesses operational posture from *existing* telemetry; it does not c
 
 ### 1. Package the skill
 
-From the `skills/` directory in this repo:
+From the `skills/` directory in this repo, build the archive from **inside** the
+skill directory so `SKILL.md` sits at the archive root (nesting it under a
+subdirectory causes `Failed to get skill resource` errors at load time):
 
 ```bash
-cd skills
-zip -r agentcore-ops-review.zip agentcore-ops-review/ -x 'agentcore-ops-review/evals/*'
+cd skills/agentcore-ops-review
+zip -qrD ../agentcore-ops-review.zip . \
+  -x 'README.md' 'CHANGELOG.md' '.skilleval.yaml' 'evals/*'
 ```
 
-The resulting `agentcore-ops-review.zip` contains:
+The resulting `agentcore-ops-review.zip` contains `SKILL.md` at the root plus the
+`references/` files:
 
 ```
-agentcore-ops-review/
-├── SKILL.md          # frontmatter + skill instructions (required)
-├── README.md
-├── CHANGELOG.md
-└── references/
-    ├── pillar-checks.md
-    ├── report-template.md
-    ├── iam-policy.json
-    ├── iam-policy-observability-only.json
-    ├── iam-policy-linked-account.json
-    └── iam-policy-management-account.json
+SKILL.md               # frontmatter + skill instructions (required, at root)
+references/
+├── pillar-checks.md
+├── report-template.md
+├── iam-policy.json
+├── iam-policy-observability-only.json
+├── iam-policy-linked-account.json
+└── iam-policy-management-account.json
 ```
 
-`evals/` is excluded from the upload to keep the zip small (it's only used for offline evaluation).
+`README.md`, `CHANGELOG.md`, `.skilleval.yaml`, and `evals/` are excluded from the
+upload — they are repo/offline-evaluation artifacts, not part of the runtime skill.
 
 Constraints (enforced at upload time):
 

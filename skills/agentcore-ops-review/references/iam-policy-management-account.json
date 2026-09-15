@@ -43,15 +43,6 @@
         "ce:GetDimensionValues"
       ],
       "Resource": "*"
-    },
-    {
-      "Sid": "OrganizationsReadOnly",
-      "Effect": "Allow",
-      "Action": [
-        "organizations:ListAccounts",
-        "organizations:DescribeOrganization"
-      ],
-      "Resource": "*"
     }
   ]
 }
