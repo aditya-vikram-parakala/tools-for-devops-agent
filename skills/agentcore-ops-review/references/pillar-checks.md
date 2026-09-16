@@ -1,8 +1,8 @@
 # AgentCore Check Definitions — Detailed Reference
 
-All checks are read-only and derive from control-plane APIs plus CloudWatch metrics. No data-plane calls, no memory/prompt/response content is read. A finding is produced ONLY when the underlying signal is complete; incomplete signals become visibility limits, never false positives.
+All checks are read-only. They derive from control-plane APIs and CloudWatch metrics, plus a single data-plane call — `bedrock-agentcore:ListMemoryRecords` — used **only** to count long-term memory records (its `content` field is never read; see "Memory record data handling" in `SKILL.md`). No agent is invoked (`InvokeAgentRuntime`), and no prompts or responses are read. A finding is produced ONLY when the underlying signal is complete; incomplete signals become visibility limits, never false positives.
 
-APIs authorize under the single IAM service prefix `bedrock-agentcore:` (this covers both control-plane actions such as `ListAgentRuntimes`/`GetGateway` and the data-plane-adjacent `ListMemoryRecords`). `bedrock-agentcore-control` is the SDK client name, not an IAM prefix. This namespace is NOT part of the standard `AIDevOpsAgentAccessPolicy`. See `iam-policy-linked-account.json`.
+APIs authorize under the single IAM service prefix `bedrock-agentcore:` (this covers control-plane actions such as `ListAgentRuntimes`/`GetGateway` and the data-plane `ListMemoryRecords`). `bedrock-agentcore-control` is the SDK client name, not an IAM prefix. This namespace is NOT part of the standard `AIDevOpsAgentAccessPolicy`. See `iam-policy-linked-account.json`.
 
 ---
 
@@ -81,7 +81,7 @@ Best-practice signals:
 
 Data collection:
 - `bedrock-agentcore:ListMemories` → `GetMemory` (status, createdAt, strategies)
-- `bedrock-agentcore:ListMemoryRecords` (record count, long-term-strategy memories only)
+- `bedrock-agentcore:ListMemoryRecords` — **data-plane, count only** (long-term-strategy memories; read the record count, never the `content` field)
 - `cloudwatch:GetMetricData` (namespace `AWS/Bedrock-AgentCore`, 30-day window):
   - `Ingestion` operation: `Invocations`, `Errors` (long-term memories)
   - `CreateEvent` operation: `Invocations` (ALL memories — short-term memories receive events too)

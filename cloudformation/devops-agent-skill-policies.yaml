@@ -380,7 +380,6 @@ Resources:
               - bedrock-agentcore:ListAgentRuntimeVersions
               - bedrock-agentcore:ListMemories
               - bedrock-agentcore:GetMemory
-              - bedrock-agentcore:ListMemoryRecords
               - bedrock-agentcore:ListGateways
               - bedrock-agentcore:GetGateway
               - bedrock-agentcore:ListGatewayTargets
@@ -388,6 +387,16 @@ Resources:
               - bedrock-agentcore:ListBrowsers
               - bedrock-agentcore:ListCodeInterpreters
               - bedrock-agentcore:ListWorkloadIdentities
+            Resource: '*'
+          # Data-plane: used ONLY to count long-term memory records (AC-MEM-2).
+          # The response can include PII-bearing memory `content`; the skill reads
+          # only the count and never parses/stores/reproduces `content`. Omit this
+          # statement for zero data-plane access — AC-MEM-2 degrades to a visibility
+          # limit and all other memory checks (CloudWatch metrics) still work.
+          - Sid: AgentCoreOpsReviewMemoryRecordCount
+            Effect: Allow
+            Action:
+              - bedrock-agentcore:ListMemoryRecords
             Resource: '*'
           - Sid: AgentCoreOpsReviewSubnetAZResolution
             Effect: Allow

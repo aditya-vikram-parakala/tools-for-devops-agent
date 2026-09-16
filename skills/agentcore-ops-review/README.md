@@ -12,7 +12,7 @@ When activated via Chat, this skill instructs the DevOps Agent to:
 4. Analyze against four check areas mapped to the Well-Architected Framework — **Runtime Resilience** (Reliability), **Gateway Health** (Reliability), **Memory & Knowledge Effectiveness** (Performance Efficiency), and **Resource Utilization & Operational Hygiene** (Operational Excellence) — plus cross-pillar runtime observability signals.
 5. Generate a shareable report artifact, titled `Bedrock AgentCore Operational Review — <account-id> — <YYYY-MM-DD>`.
 
-All data is gathered through native AWS APIs (`bedrock-agentcore`, `cloudwatch`, `ec2`, `ce`, `health`). The skill performs **no data-plane calls** (`InvokeAgentRuntime`) and reads no memory record content, prompts, or responses. It does not depend on any internal tooling.
+All data is gathered through native AWS APIs (`bedrock-agentcore`, `cloudwatch`, `ec2`, `ce`, `health`). The skill never invokes an agent (`InvokeAgentRuntime`) and reads no prompts or responses. It makes **one** data-plane call — `bedrock-agentcore:ListMemoryRecords` — solely to count long-term memory records; that response can include potentially PII-bearing `content`, which the skill never reads, stores, or reproduces (see [Memory record data handling](#memory-record-data-handling)). It does not depend on any internal tooling.
 
 ## Agent Types
 
@@ -43,12 +43,12 @@ The standard `AIDevOpsAgentAccessPolicy` covers `bedrock:*` read actions but doe
 **Full control-plane mode** — adds the read-only `bedrock-agentcore:` set plus `ec2:DescribeSubnets` to enable the runtime/gateway/memory/utilization checks. See `references/iam-policy-linked-account.json` (and `references/iam-policy-management-account.json` for the payer/management account):
 
 - `bedrock-agentcore:ListAgentRuntimes`, `GetAgentRuntime`, `ListAgentRuntimeEndpoints`, `ListAgentRuntimeVersions`
-- `bedrock-agentcore:ListMemories`, `GetMemory`, `ListMemoryRecords`
+- `bedrock-agentcore:ListMemories`, `GetMemory` (control-plane), `ListMemoryRecords` (data-plane; record count only — see [Memory record data handling](#memory-record-data-handling))
 - `bedrock-agentcore:ListGateways`, `GetGateway`, `ListGatewayTargets`, `GetGatewayTarget`
 - `bedrock-agentcore:ListBrowsers`, `ListCodeInterpreters`, `ListWorkloadIdentities`
 - `ec2:DescribeSubnets` (AC-RUN-2 multi-AZ check)
 
-The skill operates entirely in **read-only** mode: it never calls `Create*`, `Update*`, `Delete*`, or `InvokeAgentRuntime` (data-plane) APIs. If a required permission is missing, the affected check degrades to a **visibility limit** ("signal unavailable — check skipped") rather than failing the review or producing a false finding.
+The skill operates in **read-only** mode: it never calls `Create*`, `Update*`, `Delete*`, or `InvokeAgentRuntime`. Its only data-plane call is `bedrock-agentcore:ListMemoryRecords`, used for a record count and nothing else (see [Memory record data handling](#memory-record-data-handling)). If a required permission is missing, the affected check degrades to a **visibility limit** ("signal unavailable — check skipped") rather than failing the review or producing a false finding.
 
 ### 3. AgentCore workloads with activity (recommended)
 
@@ -119,7 +119,7 @@ In the DevOps Agent Chat, use natural language:
 The agent will:
 
 - Collect all data automatically (no prompts for confirmation).
-- Use only AWS APIs — no data-plane calls, no memory/prompt/response content read.
+- Use only AWS read APIs — no agent invocation, no prompts/responses read; the sole data-plane call (`ListMemoryRecords`) is used for a record count only, never for `content`.
 - Generate a report artifact titled `Bedrock AgentCore Operational Review — <account-id> — <YYYY-MM-DD>`.
 
 ## Skill Contents
@@ -158,6 +158,14 @@ agentcore-ops-review/
 | MEDIUM | Notable improvement opportunity | 30 days |
 | LOW | Minor optimization or hardening | When convenient |
 | INFO | Observation, no action required | N/A |
+
+## Memory record data handling
+
+The skill's only data-plane call is `bedrock-agentcore:ListMemoryRecords`, used to count records for long-term memories (check AC-MEM-2). Each `MemoryRecordSummary` in that response includes a required `content` field — the extracted facts, preferences, and summaries a long-term memory has stored, which can contain end-user PII.
+
+This skill uses **only the record count**. It does not read, parse, log, store, transform, transmit, or reproduce the `content` field anywhere — not in findings, artifacts, recommendations, or logs.
+
+If you prefer the skill make **zero** data-plane calls, omit `bedrock-agentcore:ListMemoryRecords` from the IAM policy. AC-MEM-2 (empty/near-empty long-term memory) then degrades to a documented visibility limit, while all other memory checks — which rely on CloudWatch ingestion metrics (`Errors`, `Invocations`, `NumberOfMemoryRecords`) — continue to work.
 
 ## Non-production disclaimer
 

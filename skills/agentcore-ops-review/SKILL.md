@@ -13,7 +13,7 @@ description: Comprehensive operational review procedures for Amazon Bedrock
   memory pipelines", or "ORR for AgentCore".
 metadata:
   author: pamvas
-  version: "1.0.0"
+  version: "1.0.1"
   aws-devops-agent-skills.agent-types: "Chat tasks, Evaluation"
   aws-devops-agent-skills.aws-services: "Amazon Bedrock AgentCore"
   aws-devops-agent-skills.technical-domains: "Machine Learning, GenAI"
@@ -33,16 +33,18 @@ This skill provides procedures for a review of AgentCore resources across four c
 - **Resource Utilization & Operational Hygiene** (Operational Excellence) — Idle resources, consolidation opportunities, low overall utilization
 - **Runtime Observability** (cross-pillar) — Session counts, invocations, throttles, vCPU-hours, GB-hours per runtime
 
-This is a **READ-ONLY** review. No modifications are made to any resource. It makes no data-plane calls (`InvokeAgentRuntime`) and reads no memory record content, prompts, or responses.
+This is a **READ-ONLY** review. No modifications are made to any resource, and it never invokes an agent (`InvokeAgentRuntime`), reads no prompts or responses, and makes no other data-plane calls. **One exception:** for long-term memories the skill calls `bedrock-agentcore:ListMemoryRecords` (a data-plane API) solely to obtain a **record count**. That response can include a `content` field carrying extracted, potentially PII-bearing memory content; the skill uses **only the count** and never parses, logs, stores, or reproduces `content`. See "Memory record data handling" below.
 
 ## Data Source Boundaries (IMPORTANT — IAM footprint)
 
 The standard `AIDevOpsAgentAccessPolicy` covers `bedrock:*` read actions but does **NOT** include the `bedrock-agentcore:*` namespace. (Note: `bedrock-agentcore-control` is the SDK client name, not an IAM prefix — all control-plane actions such as `ListAgentRuntimes`, `GetMemory`, and `ListGateways` authorize under the single service prefix `bedrock-agentcore:`.) Two modes:
 
 1. **Runtime-observability-only mode** — relies exclusively on CloudWatch metrics (`cloudwatch:GetMetricData`, `cloudwatch:ListMetrics`) against namespace `AWS/Bedrock-AgentCore`. Requires no `bedrock-agentcore:` additions. When an account isn't using AgentCore, the namespace is simply empty ("no activity detected") — this is not a failure.
-2. **Full control-plane mode** — adds read-only `bedrock-agentcore:` List/Get actions, `bedrock-agentcore:ListMemoryRecords`, and `ec2:DescribeSubnets` to enable the runtime/gateway/memory/utilization checks. See `references/iam-policy-linked-account.json`.
+2. **Full control-plane mode** — adds read-only `bedrock-agentcore:` control-plane List/Get actions and `ec2:DescribeSubnets` to enable the runtime/gateway/memory/utilization checks. It also uses one **data-plane** action, `bedrock-agentcore:ListMemoryRecords`, for the long-term-memory record count only (see "Memory record data handling" below). See `references/iam-policy-linked-account.json`.
 
 If a required permission is missing, the affected check degrades to a **visibility limit** (reported as "signal unavailable / check skipped") rather than failing the review or producing a false finding.
+
+**Memory record data handling:** `bedrock-agentcore:ListMemoryRecords` is a data-plane API whose `MemoryRecordSummary` entries include a required `content` field — the extracted facts/preferences/summaries a long-term memory has stored, which can contain end-user PII. This skill calls it **only** to count records for AC-MEM-2 and never reads, parses, logs, stores, transforms, or reproduces the `content` field. If you prefer zero data-plane access, omit this action from the IAM policy: AC-MEM-2 then degrades to a visibility limit while all other memory checks (which use CloudWatch ingestion metrics) continue to work.
 
 **Seam with `agentcore-observability-setup`:** This skill assesses operational posture from *existing* telemetry; it does not configure or validate observability wiring. Where telemetry is absent, this skill reports a visibility limit and defers the configuration gap to `agentcore-observability-setup` — that skill owns the observability-wiring finding (Transaction Search, OTEL/ADOT, log delivery, X-Ray resource policy), while this skill reports only the posture consequence. A customer running both should not see two overlapping findings on the same resource.
 
@@ -92,7 +94,7 @@ Unhealthy target statuses: `FAILED`, `UPDATE_UNSUCCESSFUL`, `SYNCHRONIZE_UNSUCCE
 
 Discover memories and their strategies, then query CloudWatch ingestion metrics:
 - `bedrock-agentcore:ListMemories` → `GetMemory` (status, createdAt, **configured strategies**)
-- `bedrock-agentcore:ListMemoryRecords` (record count — only for long-term-strategy memories)
+- `bedrock-agentcore:ListMemoryRecords` — **data-plane call, count only** (long-term-strategy memories). Read the returned record *count*; do not read the `content` field (see "Memory record data handling")
 - `cloudwatch:GetMetricData` (namespace `AWS/Bedrock-AgentCore`): per-memory `Invocations`/`Errors` for the `Ingestion` operation, and `Invocations` for the `CreateEvent` operation (30-day window)
 
 **All rules are strategy-aware** — read `GetMemory` strategies first. Record-count rules apply ONLY to memories with a long-term strategy; short-term-only memories are never flagged as empty.
@@ -183,4 +185,4 @@ Boundaries are deliberate and non-overlapping:
 - Cost Explorer queries run against us-east-1 (global endpoint).
 - Findings are only produced when the underlying signal is complete — incomplete signals become visibility limits, never false positives.
 - Batch CloudWatch `GetMetricData` requests where possible.
-- This is a READ-ONLY review — no modifications, no data-plane calls.
+- This is a READ-ONLY review — no modifications, and no data-plane calls other than `ListMemoryRecords` for record count (count only; `content` is never read).

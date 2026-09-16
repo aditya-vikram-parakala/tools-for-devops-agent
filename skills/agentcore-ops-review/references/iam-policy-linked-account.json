@@ -17,7 +17,15 @@
         "bedrock-agentcore:GetGatewayTarget",
         "bedrock-agentcore:ListBrowsers",
         "bedrock-agentcore:ListCodeInterpreters",
-        "bedrock-agentcore:ListWorkloadIdentities",
+        "bedrock-agentcore:ListWorkloadIdentities"
+      ],
+      "Resource": "*"
+    },
+    {
+      "_comment": "Data-plane: counts long-term memory records for AC-MEM-2. Response can include PII-bearing memory content; the skill reads the count only and never parses/stores/reproduces content. Omit this statement for zero data-plane access (AC-MEM-2 degrades to a visibility limit; other memory checks use CloudWatch metrics).",
+      "Sid": "AgentCoreOpsReviewMemoryRecordCount",
+      "Effect": "Allow",
+      "Action": [
         "bedrock-agentcore:ListMemoryRecords"
       ],
       "Resource": "*"

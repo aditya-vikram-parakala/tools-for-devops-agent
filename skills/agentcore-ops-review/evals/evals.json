@@ -24,14 +24,15 @@
   },
   {
     "id": "agentcore-review-data-source-priority",
-    "prompt": "According to the skill, which AWS APIs does the AgentCore operational review use to collect data? Name at least three specific API calls or namespaces the skill mentions. Confirm whether the skill makes any data-plane call or reads memory record content. No account access required.",
-    "expected_output": "States the skill uses the bedrock-agentcore, CloudWatch, and EC2 APIs and explicitly does NOT call InvokeAgentRuntime or read memory record content, prompts, or responses. Names specific calls such as bedrock-agentcore:ListAgentRuntimes, bedrock-agentcore:ListMemories, cloudwatch:GetMetricData, cloudwatch:ListMetrics, or ec2:DescribeSubnets.",
+    "prompt": "According to the skill, which AWS APIs does the AgentCore operational review use to collect data? Name at least three specific API calls or namespaces the skill mentions. Does the skill invoke any agent, and how does it handle memory record content? No account access required.",
+    "expected_output": "States the skill uses the bedrock-agentcore, CloudWatch, and EC2 APIs; names specific calls such as bedrock-agentcore:ListAgentRuntimes, bedrock-agentcore:ListMemories, cloudwatch:GetMetricData, cloudwatch:ListMetrics, or ec2:DescribeSubnets. Confirms it never invokes an agent (InvokeAgentRuntime) and that its one data-plane call, ListMemoryRecords, is used only for a record count — it never reads, stores, or reproduces memory record content.",
     "files": [],
     "assertions": [
       "contains 'bedrock-agentcore' or contains 'AgentCore'",
       "contains 'CloudWatch' or contains 'cloudwatch'",
       "contains 'ListAgentRuntimes' or contains 'ListMemories' or contains 'GetMetricData' or contains 'ListMetrics' or contains 'DescribeSubnets'",
-      "contains 'not' or contains 'no '"
+      "contains 'count' or contains 'ListMemoryRecords'",
+      "contains 'not' or contains 'never' or contains 'no '"
     ]
   },
   {

@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.1] - 2026-09-16
+
+### Changed
+- Clarified the data-boundary documentation: `bedrock-agentcore:ListMemoryRecords` is a data-plane call and its response can include PII-bearing memory `content`. The skill uses it **only** to count records (AC-MEM-2) and never reads, stores, or reproduces `content`. Updated SKILL.md, README (new "Memory record data handling" section), references, sample IAM policies, and the CloudFormation block to state this accurately, and separated the action into its own clearly-labeled IAM statement so it can be omitted for zero data-plane access.
+
 ## [1.0.0] - 2026-09-10
 
 ### Added
