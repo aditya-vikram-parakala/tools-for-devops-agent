@@ -46,9 +46,23 @@ jobs:
 
       - name: Detect stale skills and render issue content
         id: detect
+        env:
+          # Bind the workflow_dispatch input to an environment variable instead of
+          # interpolating ${{ github.event.* }} into the script body. Inline
+          # interpolation is substituted before the shell runs, so a crafted value
+          # could inject commands. Referencing "$MAX_AGE_DAYS_INPUT" keeps the value
+          # as data. See GitHub's guidance on mitigating script injection:
+          # https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#good-practices-for-mitigating-script-injection-attacks
+          MAX_AGE_DAYS_INPUT: ${{ github.event.inputs.max_age_days }}
         run: |
-          MAX_AGE="${{ github.event.inputs.max_age_days }}"
-          MAX_AGE="${MAX_AGE:-60}"
+          MAX_AGE="${MAX_AGE_DAYS_INPUT:-60}"
+          # Validate before use: the threshold must be a positive integer.
+          case "$MAX_AGE" in
+            '' | *[!0-9]*)
+              echo "::error::max_age_days must be a positive integer (got: '$MAX_AGE')"
+              exit 1
+              ;;
+          esac
           python3 .github/scripts/check_skill_staleness.py \
             --max-age-days "$MAX_AGE" \
             --output stale.json \
@@ -136,8 +150,13 @@ jobs:
           done < reminders/index.txt
 
       - name: Summary
+        env:
+          # Not attacker-influenced (this is our own script's integer count), but
+          # bound via env: for consistency so no ${{ }} expression is interpolated
+          # into a run: script anywhere in this workflow.
+          STALE_COUNT: ${{ steps.detect.outputs.count }}
         run: |
-          echo "Stale skills this run: ${{ steps.detect.outputs.count }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "Stale skills this run: ${STALE_COUNT}" >> "$GITHUB_STEP_SUMMARY"
           if [ -f stale.json ]; then
             echo '```json' >> "$GITHUB_STEP_SUMMARY"
             cat stale.json >> "$GITHUB_STEP_SUMMARY"
