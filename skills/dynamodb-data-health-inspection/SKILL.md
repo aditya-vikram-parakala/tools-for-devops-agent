@@ -3,7 +3,7 @@ name: dynamodb-data-health-inspection
 description: "Inspect Amazon DynamoDB tables for data-level health issues that table-level metrics cannot reveal: hot partition keys, item size distribution (items near the 400 KB limit, attribute bloat, skew), TTL effectiveness (enabled but reclaiming nothing, missing or malformed TTL attributes, expired-item backlog), and GSI/LSI utilization (unused or write-only indexes, over-broad projections, item collections near the 10 GB LSI limit). Use when a table throttles while consumed capacity is low, storage or cost climbs unexplained, TTL is enabled but storage keeps growing, items may approach 400 KB, or when asked to review a table's data health, item distribution, index utilization, or schema anti-patterns. Read-only: control-plane, CloudWatch, and Contributor Insights analysis first, then bounded, consent-gated, value-redacting Scan sampling; never a full-table scan or a mutation. Does NOT tune capacity, request quota increases, audit alarm/PITR/backup/capacity-mode config, or diagnose latency or IAM AccessDenied."
 metadata:
   author: apparaka
-  version: "1.1.0"
+  version: "1.2.0"
   aws-devops-agent-skills.agent-types: "Chat tasks, Prevention, Incident RCA"
   aws-devops-agent-skills.aws-services: "Amazon DynamoDB, Amazon CloudWatch"
   aws-devops-agent-skills.technical-domains: "Database"
@@ -251,6 +251,38 @@ and note that item-size and TTL-item findings require `dynamodb:Scan`.
 
 If any check returned `ToolingFailure`, present the same two-option prompt with
 "Stop here and retry later (recommended)" as option 1, and wait.
+
+## When there is no table to inspect, do not run this skill
+
+This skill's entire method is **collect evidence, then apply thresholds**. If you cannot
+collect — a historical incident, a pasted report, a question about a table that no longer
+exists or was never named — the method does not apply, and forcing it produces worse
+answers than plain reasoning. Measured on 40 real support cases diagnosed from narrative
+alone, applying this skill's framing without live data **reduced** root-cause accuracy
+from 97.5% to 90.0%.
+
+Two specific failure modes to avoid:
+
+- **Do not force the four dimensions onto the symptoms.** They are a collection plan, not
+  a differential diagnosis. In validation this skill pushed a pagination-behaviour case
+  toward "hot partition" purely because hot keys are one of its dimensions, and rejected
+  the reporter's correct 1 MB-limit explanation to do it. If the described symptoms do not
+  match a dimension, say so and reason from the symptoms.
+- **Do not substitute skepticism for knowledge.** The evidence discipline here exists to
+  stop *you* over-claiming, not to overrule a reporter who has already measured something.
+  In validation this skill contradicted a documented, correct remediation by asserting a
+  DynamoDB capability did not exist. When someone reports a concrete observation you
+  cannot check, take it at face value and reason forward from it.
+
+So when there is no live table:
+
+1. Say plainly that you cannot run the inspection, and why.
+2. Answer from the symptoms as a knowledgeable engineer would, without this skill's
+   thresholds, rule IDs, or report format — those describe *measurements you did not make*.
+3. Offer to run the real inspection if they can point you at a live table.
+
+Cite a rule ID only for a finding you actually derived from collected data. A rule ID on
+an unmeasured guess implies evidence that does not exist.
 
 ## Interpreting a Scan sample honestly
 

@@ -143,28 +143,6 @@ Trigger: `hot_keys.status == "NotConfigured"`, or every target's `ci_status != "
 > LSIs need no separate enablement; their activity appears under the base table's
 > keys because they share the base table's partitions.
 
-### HK-06 [A] · Contributor Insights enabled but returned no data · **Low**
-
-Trigger: `hot_keys.status == "NoData"` — status `ENABLED` and rules present, but zero
-contributors after retrying the window at 24 hours.
-
-> **Contributor Insights is enabled for `<targets>` but returned no contributors over
-> the last `<window>`, so hot keys are not determinable from this run.** An enabled
-> rule with no contributors is an empty window, not a verdict: Contributor Insights
-> takes time to populate after being enabled, and in **throttled-keys-only** mode the
-> throttled-key rules emit nothing at all unless throttling occurred — which, if the
-> table is healthy, is the expected and desirable result.
->
-> Remediation: if Contributor Insights was enabled recently, re-run this inspection
-> after the table has served a representative traffic period. If it has been enabled
-> for some time and the mode is throttled-keys-only, the empty result is consistent
-> with a table that is not throttling — corroborate with the throttle metrics in this
-> report rather than concluding anything from the empty rule.
-
-This rule exists to close a specific hole: without it, an enabled-but-empty
-Contributor Insights produces no hot-key finding at all, and the dimension renders as
-though it had been assessed and found healthy. Mark the hot-key dimension ❓, never ✅.
-
 ### HK-02 [A] · Hot key confirmed with throttling · **High**
 
 Trigger: top contributor's value ≥ **3×** the second contributor's, **and** throttling
@@ -264,6 +242,28 @@ and `table_size_bytes > 10 GB`.
 ---
 
 ## Dimension 3 — TTL Effectiveness
+
+### HK-06 [A] · Contributor Insights enabled but returned no data · **Low**
+
+Trigger: `hot_keys.status == "NoData"` — status `ENABLED` and rules present, but zero
+contributors after retrying the window at 24 hours.
+
+> **Contributor Insights is enabled for `<targets>` but returned no contributors over
+> the last `<window>`, so hot keys are not determinable from this run.** An enabled
+> rule with no contributors is an empty window, not a verdict: Contributor Insights
+> takes time to populate after being enabled, and in **throttled-keys-only** mode the
+> throttled-key rules emit nothing at all unless throttling occurred — which, if the
+> table is healthy, is the expected and desirable result.
+>
+> Remediation: if Contributor Insights was enabled recently, re-run this inspection
+> after the table has served a representative traffic period. If it has been enabled
+> for some time and the mode is throttled-keys-only, the empty result is consistent
+> with a table that is not throttling — corroborate with the throttle metrics in this
+> report rather than concluding anything from the empty rule.
+
+This rule exists to close a specific hole: without it, an enabled-but-empty
+Contributor Insights produces no hot-key finding at all, and the dimension renders as
+though it had been assessed and found healthy. Mark the hot-key dimension ❓, never ✅.
 
 ### TTL-01 [A] · TTL enabled but deleting nothing · **High**
 
@@ -550,29 +550,6 @@ Trigger: table has ≥ 1 LSI **and** the estimated item collection size ≥ **8 
 > item-collection limit), or re-model so this partition key holds fewer or smaller
 > items.
 
-### IX-10 [A] · Write amplification from indexes · **Medium**
-
-Trigger: summed GSI `consumed_write_sum_30d` across all indexes ≥ **1.5×** the base
-table's `consumed_write_sum_30d`.
-
-Emit this whenever the ratio is met, even if no individual index looks wrong. It
-answers a question customers arrive with directly — *"why is my write cost higher than
-the writes I'm doing?"* — which the per-index rules above do not answer on their own.
-
-> **Indexes are consuming `<ratio>`× the base table's write capacity**
-> (`<gsi_total>` write units across `<n>` index(es) versus `<base>` on the table over
-> `<window>`). Every write to the base table that touches an index's key or projected
-> attributes is replicated into that index and billed again. With `<n>` index(es) on
-> this table, a single logical write costs up to `<n+1>` physical writes, which is why
-> the consumed capacity exceeds what the application appears to be writing.
-> Per-index write consumption: `<per_index_breakdown>`.
->
-> Remediation: narrow projections to the attributes each index's queries actually read
-> (`KEYS_ONLY` or `INCLUDE` instead of `ALL`), and remove indexes no query path uses.
-> Where an index only needs to cover a subset of items, a **sparse index** — keying on
-> an attribute that most items omit — avoids replicating writes for items the index does
-> not need to serve.
-
 ### IX-09 [A] · No secondary indexes · **Info**
 
 Trigger: no GSIs and no LSIs.
@@ -611,3 +588,26 @@ Before rendering, verify the findings do not contradict each other:
 | IS-01 vs IS-05 | Both may fire; IS-05 must not be phrased so as to imply the distribution is healthy when IS-01 fired |
 | Any [B] rule vs `sampling.status` | No `[B]` finding may appear unless `sampling.status == "completed"` or `"aborted"` with usable data |
 | Any rule whose threshold divides by `TableSizeBytes` or `ItemCount` | If either is 0 or `null` from stale metadata, the rule must degrade to a stated-uncertainty finding (see IX-04) rather than silently not firing. A threshold that cannot be evaluated is not a passing threshold. |
+### IX-10 [A] · Write amplification from indexes · **Medium**
+
+Trigger: summed GSI `consumed_write_sum_30d` across all indexes ≥ **1.5×** the base
+table's `consumed_write_sum_30d`.
+
+Emit this whenever the ratio is met, even if no individual index looks wrong. It
+answers a question customers arrive with directly — *"why is my write cost higher than
+the writes I'm doing?"* — which the per-index rules above do not answer on their own.
+
+> **Indexes are consuming `<ratio>`× the base table's write capacity**
+> (`<gsi_total>` write units across `<n>` index(es) versus `<base>` on the table over
+> `<window>`). Every write to the base table that touches an index's key or projected
+> attributes is replicated into that index and billed again. With `<n>` index(es) on
+> this table, a single logical write costs up to `<n+1>` physical writes, which is why
+> the consumed capacity exceeds what the application appears to be writing.
+> Per-index write consumption: `<per_index_breakdown>`.
+>
+> Remediation: narrow projections to the attributes each index's queries actually read
+> (`KEYS_ONLY` or `INCLUDE` instead of `ALL`), and remove indexes no query path uses.
+> Where an index only needs to cover a subset of items, a **sparse index** — keying on
+> an attribute that most items omit — avoids replicating writes for items the index does
+> not need to serve.
+

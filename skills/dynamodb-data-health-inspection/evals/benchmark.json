@@ -1,10 +1,10 @@
 {
   "skill_name": "dynamodb-data-health-inspection",
   "skill_path": "/Users/apparaka/Desktop/Nebula/tools-for-devops-agent/skills/dynamodb-data-health-inspection",
-  "eval_count": 13,
+  "eval_count": 14,
   "runs_per_eval": 1,
   "metadata": {
-    "timestamp": "2026-09-14T22:36:07Z"
+    "timestamp": "2026-09-16T00:02:33Z"
   },
   "runs": [
     {
@@ -53,13 +53,13 @@
           "tool_calls": 1,
           "token_counts": {
             "input_tokens": 4,
-            "output_tokens": 234,
-            "cache_read_input_tokens": 44423,
-            "cache_creation_input_tokens": 52593
+            "output_tokens": 232,
+            "cache_read_input_tokens": 45044,
+            "cache_creation_input_tokens": 53212
           }
         },
         "timing": {
-          "elapsed_seconds": 21.672161624999717
+          "elapsed_seconds": 17.385969374969136
         },
         "raw_output": "Five tables, all in `us-east-1` (account `111122223333`):\n\n| Table | Region |\n|---|---|\n| orders-prod | us-east-1 |\n| sessions-prod | us-east-1 |\n| audit-log-prod | us-east-1 |\n| freshly-loaded-prod | us-east-1 |\n| legacy-sessions-prod | us-east-1 |"
       },
@@ -103,18 +103,18 @@
         "pass_rate": 1.0,
         "summary": "Without skill: 100% assertions passed",
         "execution_metrics": {
-          "tool_calls": 1,
+          "tool_calls": 2,
           "token_counts": {
-            "input_tokens": 4,
-            "output_tokens": 187,
-            "cache_read_input_tokens": 37527,
-            "cache_creation_input_tokens": 44937
+            "input_tokens": 6,
+            "output_tokens": 268,
+            "cache_read_input_tokens": 75199,
+            "cache_creation_input_tokens": 45839
           }
         },
         "timing": {
-          "elapsed_seconds": 15.43273316702107
+          "elapsed_seconds": 19.478846416983288
         },
-        "raw_output": "Five tables, all in `us-east-1` (single region field at the top of the file; no per-table region):\n\n- orders-prod\n- sessions-prod\n- audit-log-prod\n- freshly-loaded-prod\n- legacy-sessions-prod"
+        "raw_output": "I'll find and read the file.Five tables, all in `us-east-1` (account 111122223333):\n\n- orders-prod\n- sessions-prod\n- audit-log-prod\n- freshly-loaded-prod\n- legacy-sessions-prod\n\nThe file has a single top-level `region` field; no per-table region overrides."
       },
       "delta_pass_rate": 0.0
     },
@@ -164,15 +164,15 @@
           "tool_calls": 0,
           "token_counts": {
             "input_tokens": 2,
-            "output_tokens": 366,
+            "output_tokens": 263,
             "cache_read_input_tokens": 11335,
-            "cache_creation_input_tokens": 33100
+            "cache_creation_input_tokens": 33719
           }
         },
         "timing": {
-          "elapsed_seconds": 14.699376082979143
+          "elapsed_seconds": 12.731436332978774
         },
-        "raw_output": "Four dimensions:\n\n| Dimension | What it looks for |\n|---|---|\n| **Hot partition keys** | Traffic concentration on individual keys (authoritatively from Contributor Insights, corroborated by key-range throttle metrics) |\n| **Item size distribution** | Items approaching the 400 KB limit, attribute bloat, size skew |\n| **TTL effectiveness** | TTL enabled but reclaiming nothing, missing/malformed TTL attributes, expired-item backlog |\n| **GSI/LSI utilization** | Unused or write-only indexes, over-broad projections, item collections nearing the 10 GB LSI limit |\n\nA full review must report all four (plus a dimensions matrix, health rating, and sampling provenance). Notably, four signals come from Phase A alone with zero data-plane cost \u2014 mean item size, GSI storage amplification, unused/write-only indexes, and TTL not reclaiming storage \u2014 while item size *distribution*, per-item attribute shape, and per-item TTL timestamps require consent-gated, bounded, redacted `Scan` sampling."
+        "raw_output": "Four dimensions:\n\n| Dimension | What it checks |\n|---|---|\n| **Hot partition keys** | Traffic concentration on individual keys (authoritative source: Contributor Insights, corroborated by key-range throttle metrics) |\n| **Item size distribution** | Items near the 400 KB limit, attribute bloat, size skew |\n| **TTL effectiveness** | TTL enabled but reclaiming nothing, missing/malformed TTL attributes, expired-item backlog |\n| **GSI/LSI utilization** | Unused or write-only indexes, over-broad projections, item collections near the 10 GB LSI limit |\n\nA full review must report on all four (the dimensions matrix has one row each); a targeted question answers one and explicitly lists which of the others weren't collected."
       },
       "without_skill": {
         "eval_id": "ddb-data-health-dimensions",
@@ -214,18 +214,18 @@
         "pass_rate": 0.0,
         "summary": "Without skill: 0% assertions passed",
         "execution_metrics": {
-          "tool_calls": 14,
+          "tool_calls": 5,
           "token_counts": {
-            "input_tokens": 26,
-            "output_tokens": 3885,
-            "cache_read_input_tokens": 645821,
-            "cache_creation_input_tokens": 51600
+            "input_tokens": 8,
+            "output_tokens": 2016,
+            "cache_read_input_tokens": 130199,
+            "cache_creation_input_tokens": 31681
           }
         },
         "timing": {
-          "elapsed_seconds": 77.75694424999529
+          "elapsed_seconds": 37.516957250016276
         },
-        "raw_output": "There's no \"data health inspection\" in the skill \u2014 I read the full `amazon-dynamodb` SKILL.md and it defines no such workflow, and no \"dimensions\" list for one. So I can't tell you its dimensions; the premise doesn't match the skill.\n\nWhat the skill actually defines is a 6-stage pipeline:\n\n| # | Stage | Touches AWS? |\n|---|---|---|\n| 1 | Design (access-pattern list + schema, from design axioms) | no |\n| 2 | Cost estimate (`calculate_costs.py` \u2192 `cost_report.md`) | no |\n| 3 | Deploy (`deploy_model.py`) | yes |\n| 4 | Benchmark (`benchmark_model.py`) | yes |\n| 5 | Report (`generate_perf_report.py` \u2192 `performance_report.md`, `design_findings.json`) | no |\n| 6 | Teardown (`generate_teardown.py` \u2192 `teardown.sh`) | yes |\n\nStages 3\u20136 are the opt-in \"live validation\" fork that creates real resources. Stages 1\u20132 require no table access at all.\n\nIf you meant something more specific \u2014 a design/architecture review of an existing table, the Well-Architected-style checks (that's the `amazon-documentdb` skill, which does ship a 41-check `wa_review.py`), or the design axioms the skill reviews a model against \u2014 say which and I'll pull the exact list."
+        "raw_output": "No such skill is available in this session, so I can't tell you what it says.\n\nThe installed skill set here has no DynamoDB data health skill \u2014 the AWS skills available are `amazon-bedrock`, `aws-billing-and-cost-management`, `aws-blocks`, `aws-cdk`, `aws-cloudformation`, `aws-compute`, `aws-containers`, `aws-deployment`, `aws-messaging-and-streaming`, `aws-observability`, the three `aws-sdk-*-usage` skills, `aws-serverless`, `launch-with-aws`, and `signing-in-to-aws`. A path named `dynamodb-data-health-inspection` shows up in your session history under `~/Desktop/Nebula/tools-for-devops/agent-skills/`, but that directory no longer exists on disk.\n\nIf you point me at the SKILL.md (or reinstall it), I'll read off its actual dimensions. I'm not going to guess at them \u2014 that would just be invented content attributed to your skill."
       },
       "delta_pass_rate": 1.0
     },
@@ -280,18 +280,18 @@
         "pass_rate": 1.0,
         "summary": "With skill: 100% assertions passed",
         "execution_metrics": {
-          "tool_calls": 3,
+          "tool_calls": 2,
           "token_counts": {
-            "input_tokens": 6,
-            "output_tokens": 1873,
-            "cache_read_input_tokens": 101355,
-            "cache_creation_input_tokens": 49479
+            "input_tokens": 4,
+            "output_tokens": 2109,
+            "cache_read_input_tokens": 56418,
+            "cache_creation_input_tokens": 48812
           }
         },
         "timing": {
-          "elapsed_seconds": 38.623417665978195
+          "elapsed_seconds": 37.19705341599183
         },
-        "raw_output": "Yes, with one caveat worth knowing: everything is read-only, but Phase B does read live items and consumes read capacity, so it's not zero-impact.\n\n## Operations it performs\n\n**Phase A \u2014 control plane + CloudWatch only. No items read, no data-plane cost.**\n\n| Service | Operations |\n|---|---|\n| STS | `GetCallerIdentity` |\n| DynamoDB | `DescribeTable`, `DescribeTimeToLive`, `DescribeContributorInsights`, `ListContributorInsights`, `ListTables`, `DescribeContinuousBackups`, `DescribeLimits` |\n| CloudWatch | `GetMetricData`, `GetMetricStatistics`, `GetInsightRuleReport`, `DescribeInsightRules`, `DescribeAlarms` |\n| App Auto Scaling | `DescribeScalableTargets` |\n\n**Phase B \u2014 adds exactly two data-plane reads, `dynamodb:Scan` and `dynamodb:Query`**, and only after you explicitly approve a plan that states the item count, segment count, and estimated RCU. It asks per table and per run; consent never carries over.\n\n## Does it modify anything?\n\nNo. Writes are hard-denied by the skill's own allowlist: any `Put*`, `Update*`, `Delete*`, `Create*`, `BatchWriteItem`, `TransactWriteItems`, `RestoreTable*`, plus `UpdateTimeToLive` and `UpdateContributorInsights` specifically \u2014 it will not flip a feature on to observe it, and will not delete an item to test TTL. A ReadOnly role plus `dynamodb:Scan`/`Query` is sufficient; if `Scan` is denied it skips the consent gate entirely rather than failing mid-run.\n\n## Limits on reading item data\n\n| Bound | Value |\n|---|---|\n| Default sample | \u2264 1,000 items (TTL/key pass), 100\u2013200 items (item-size pass) |\n| Absolute ceiling | 10,000 items, only on explicit request, never beyond |\n| Parallel segments | \u2264 4 |\n| `Limit` per page | \u2264 250 |\n| `ConsistentRead` | always `false` (never the 2\u00d7 cost) |\n| Wall clock | abort at 60 s |\n| Capacity | abort if cumulative consumed RCU exceeds the estimate \u00d7 1.5 |\n\nNever permitted: a full-table `Scan`, a `Scan` without `Limit`, `Select: COUNT` over a whole table, `FilterExpression` as a cost control, following `"
+        "raw_output": "Yes \u2014 it's read-only by construction, and the one part that touches item data is gated on your explicit approval each run. The residual risk is not mutation; it's read capacity contention from `Scan` sampling on a live table.\n\n## Operations it performs\n\n**Phase A (always runs, zero data-plane cost)** \u2014 control-plane and metrics only:\n\n| Service | Operations |\n|---|---|\n| STS | `GetCallerIdentity` |\n| DynamoDB | `DescribeTable`, `DescribeTimeToLive`, `DescribeContributorInsights`, `ListContributorInsights`, `ListTables`, `DescribeContinuousBackups`, `DescribeLimits` |\n| CloudWatch | `GetMetricData`, `GetMetricStatistics`, `GetInsightRuleReport`, `DescribeInsightRules`, `DescribeAlarms` |\n| App Auto Scaling | `DescribeScalableTargets` |\n\nNo item is read in Phase A, and it alone yields real findings (mean item size, GSI storage amplification, unused/write-only indexes, TTL enabled but reclaiming nothing).\n\n**Phase B (consent-gated)** adds exactly two data-plane reads: `dynamodb:Scan` (bounded, segmented) and `dynamodb:Query` with `Select: COUNT` scoped to a *single* partition key, only for LSI item-collection estimation.\n\n## Does it modify anything\n\nNo. `Put*`, `Update*`, `Delete*`, `Create*`, `BatchWriteItem`, `TransactWriteItems`, `UpdateTimeToLive`, `UpdateContributorInsights`, and `RestoreTable*` are hard-denied. Notably it will not flip a feature's enablement state to observe it, and will not delete an item to test TTL \u2014 if Contributor Insights is disabled, it reports that as a finding and recommends you enable it, rather than enabling it itself.\n\n## Limits on reading item data\n\nConsent first: it computes the sampling plan (segments, item cap, RCU estimate, what is and isn't recorded), presents it, and waits. Consent is per table, per run, and never carries over.\n\n| Cap | Value |\n|---|---|\n| Items sampled, default | \u2264 1,000 (tiered by `ItemCount`) |\n| Items sampled, absolute ceiling on request | 10,000 \u2014 never beyond |\n| `TotalSegments` | \u2264 4 |\n| `Limit` per page "
       },
       "without_skill": {
         "eval_id": "ddb-data-health-sampling-safety",
@@ -299,8 +299,8 @@
         "assertion_results": [
           {
             "text": "contains 'read-only' or contains 'read only'",
-            "passed": false,
-            "evidence": "No OR branch satisfied \u2014 contains 'read-only': Substring not found: 'read-only'; contains 'read only': Substring not found: 'read only'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains 'read-only' \u2014 Substring found: 'read-only'",
             "method": "deterministic",
             "confidence": 1.0,
             "uncertain": false
@@ -338,23 +338,23 @@
             "uncertain": false
           }
         ],
-        "pass_rate": 0.8,
-        "summary": "Without skill: 80% assertions passed",
+        "pass_rate": 1.0,
+        "summary": "Without skill: 100% assertions passed",
         "execution_metrics": {
-          "tool_calls": 15,
+          "tool_calls": 11,
           "token_counts": {
-            "input_tokens": 22,
-            "output_tokens": 5659,
-            "cache_read_input_tokens": 453308,
-            "cache_creation_input_tokens": 58271
+            "input_tokens": 16,
+            "output_tokens": 3527,
+            "cache_read_input_tokens": 298012,
+            "cache_creation_input_tokens": 57024
           }
         },
         "timing": {
-          "elapsed_seconds": 94.83994420900126
+          "elapsed_seconds": 62.97730058297748
         },
-        "raw_output": "I need to find the skill you're referring to \u2014 let me look at the working directory.Read `~/Desktop/Nebula/tools-for-devops-agent/skills/dynamodb-data-health-inspection` (the current working directory is empty, so I located it by name).\n\n**Verdict: safe against production, with one real caveat** \u2014 Phase A is genuinely zero-impact, but Phase B consumes read capacity on the live table. It cannot mutate anything, and Phase B never runs without your explicit per-run approval.\n\n## AWS operations\n\n**Phase A \u2014 control plane + CloudWatch (always runs, zero data-plane cost):**\n\n| Service | Operations |\n|---|---|\n| STS | `GetCallerIdentity` |\n| DynamoDB | `DescribeTable`, `DescribeTimeToLive`, `DescribeContributorInsights`, `ListContributorInsights`, `ListTables`, `DescribeContinuousBackups`, `DescribeLimits` |\n| CloudWatch | `GetMetricData`, `GetMetricStatistics`, `GetInsightRuleReport`, `DescribeInsightRules`, `DescribeAlarms` |\n| App Auto Scaling | `DescribeScalableTargets` (skipped for `PAY_PER_REQUEST`) |\n\n**Phase B \u2014 data plane (consent-gated):** exactly two operations, `dynamodb:Scan` and `dynamodb:Query`. The `Query` is only used to size an LSI item collection via `Select: COUNT` scoped to a single partition key.\n\n## Does it modify anything?\n\nNo. Writes are on an explicit hard-denial list: any `Put*`, `Update*`, `Delete*`, `Create*`, `BatchWriteItem`, `TransactWriteItems`, `UpdateContributorInsights`, `UpdateTimeToLive`, `RestoreTable*`. The skill specifically forbids toggling a feature's enablement state in order to observe it, and forbids deleting an item to test TTL. If it finds Contributor Insights disabled, it recommends enabling it rather than doing so.\n\n## Limits on reading item data\n\nPhase B runs two passes with separate budgets:\n\n| Pass | Projection | Segments | Limit/page | Items |\n|---|---|---|---|---|\n| 1 \u2014 TTL & key distribution | `#pk, #sk, #ttl` only | 1\u20134 by table size | 100\u2013250 | \u2264 300 / 500 / 1,000 |\n| 2 \u2014 item size | none (full items) | 4 | 25\u201350 | "
+        "raw_output": "Yes \u2014 it's read-only by design, with one caveat: Phase B reads real items from the live table and consumes read capacity, so it can contend with production traffic. That phase is consent-gated and bounded.\n\n(Read from `/Users/apparaka/Desktop/Nebula/tools-for-devops-agent/skills/dynamodb-data-health-inspection` \u2014 your working directory is empty.)\n\n## AWS operations\n\n**Phase A \u2014 control plane + CloudWatch only, zero data-plane cost.** Allowlist (`references/data-collection.md:327`):\n\n| Service | Operations |\n|---|---|\n| STS | `GetCallerIdentity` |\n| DynamoDB | `DescribeTable`, `DescribeTimeToLive`, `DescribeContributorInsights`, `ListContributorInsights`, `ListTables`, `DescribeContinuousBackups`, `DescribeLimits` |\n| CloudWatch | `GetMetricData`, `GetMetricStatistics`, `GetInsightRuleReport`, `DescribeInsightRules`, `DescribeAlarms` |\n| App Auto Scaling | `DescribeScalableTargets` (skipped on `PAY_PER_REQUEST`) |\n\n**Phase B \u2014 exactly two data-plane reads:** `dynamodb:Scan` (bounded) and `dynamodb:Query` (only with `Select: COUNT` scoped to one partition key, for LSI item-collection estimation).\n\n## Does it modify anything\n\nNo. Explicit hard denials on any `Put*`, `Update*`, `Delete*`, `Create*`, `BatchWriteItem`, `TransactWriteItems`, `UpdateContributorInsights`, `UpdateTimeToLive`, `RestoreTable*`. It won't toggle a feature's enablement to observe it, and won't delete an item to test TTL. If it finds Contributor Insights disabled, it *recommends* enabling it rather than doing so.\n\n## Limits on reading item data\n\n- **Consent required before the first read**, per table and per run \u2014 never carries over. Declining still yields the Phase A report.\n- **Refuses to even offer sampling** if Phase A saw throttling in the last hour; it presents a \"do not sample\" default instead, with a reduced 250-item option.\n- **Two passes:** pass 1 projects only PK/SK/TTL attributes (\u22641,000 items); pass 2 reads full items but only 100\u2013200 total.\n- **Hard caps:** \u22641,000 items default / 10,0"
       },
-      "delta_pass_rate": 0.19999999999999996
+      "delta_pass_rate": 0.0
     },
     {
       "eval_id": "ddb-data-health-ttl-not-deleting",
@@ -410,15 +410,15 @@
           "tool_calls": 2,
           "token_counts": {
             "input_tokens": 4,
-            "output_tokens": 5769,
-            "cache_read_input_tokens": 55807,
-            "cache_creation_input_tokens": 55116
+            "output_tokens": 4164,
+            "cache_read_input_tokens": 56432,
+            "cache_creation_input_tokens": 55744
           }
         },
         "timing": {
-          "elapsed_seconds": 85.18213216701406
+          "elapsed_seconds": 64.56826933397679
         },
-        "raw_output": "I'll read the context file and the skill's finding logic.## Root cause\n\nThe application writes `expiresAt` in **epoch milliseconds instead of epoch seconds**. DynamoDB's TTL scanner reads that Number as seconds, so `1.79 \u00d7 10\u00b9\u00b2` resolves to roughly the year 56,700 \u2014 the item is never expired, never deleted, and no error or metric is raised. (The file's note calls this \"~5,000 years in the future\"; it is actually tens of thousands, but the effect is the same.)\n\nTwo rules fire from `references/finding-logic.md`.\n\n### TTL-01 [A] \u00b7 TTL enabled but deleting nothing \u00b7 **High**\n\n> **TTL is enabled on attribute `expiresAt` but has deleted zero items in the last 14 days** (`TimeToLiveDeletedItemCount` sum = 0). TTL is enabled and running, so a zero deletion count means no item currently carries a valid, expired, Number-typed timestamp in that attribute. The table is paying to store data that the retention policy intends to remove, and the storage will grow without bound. Table size trend was not measured in this run; `TableSizeBytes` is a point-in-time value.\n>\n> Remediation: verify the attribute name in the TTL configuration matches the attribute the application actually writes, and that it is stored as a **Number** in **Unix epoch seconds**. A single mismatch \u2014 a different name, a string type, or milliseconds instead of seconds \u2014 makes TTL silently no-op with no error and no metric. The per-item findings below identify which of these applies.\n\n### TTL-04 [B] \u00b7 TTL attribute malformed \u00b7 **Medium** (downgraded from High)\n\n> **94.7% of sampled items (947 of 1000) carry a `expiresAt` value that TTL cannot act on:** 947 at millisecond scale. DynamoDB requires a **Number** attribute in **Unix epoch seconds**; it silently ignores attributes of any other type, and a millisecond-scale value resolves to a date thousands of years in the future, so the item never expires. Neither case raises an error or increments a metric.\n>\n> Remediation: correct the writer to emit epoch **seconds**"
+        "raw_output": "I'll read the context file and the skill's TTL finding logic.## Answer: TTL on `sessions-prod` is a silent no-op \u2014 the timestamps are in milliseconds\n\nTwo rules fired from `references/finding-logic.md`.\n\n### TTL-01 [A] \u00b7 TTL enabled but deleting nothing \u00b7 **High**\n\n> **TTL is enabled on attribute `expiresAt` but has deleted zero items in the last 14 days** (`TimeToLiveDeletedItemCount` sum = 0). TTL is enabled and running, so a zero deletion count means no item currently carries a valid, expired, Number-typed timestamp in that attribute. The table is paying to store data that the retention policy intends to remove, and the storage will grow without bound. Table size trend was not measured in this run; `TableSizeBytes` is a point-in-time value.\n>\n> Remediation: verify the attribute name in the TTL configuration matches the attribute the application actually writes, and that it is stored as a **Number** in **Unix epoch seconds**. A single mismatch \u2014 a different name, a string type, or milliseconds instead of seconds \u2014 makes TTL silently no-op with no error and no metric. The per-item findings below identify which of these applies.\n\nEvidence: `ttl.state = ENABLED`, `deleted_item_count.status = OK`, `sum_14d = 0`, and all 14 daily datapoints are `0` \u2014 a measured zero, not `NoData`, so this is TTL-01 and not TTL-02.\n\n### TTL-04 [B] \u00b7 TTL attribute malformed \u00b7 **High \u2192 Medium**\n\n> **94.7% of sampled items (947 of 1000) carry a `expiresAt` value that TTL cannot act on:** 947 at millisecond scale. DynamoDB requires a **Number** attribute in **Unix epoch seconds**; it silently ignores attributes of any other type, and a millisecond-scale value resolves to a date thousands of years in the future, so the item never expires. Neither case raises an error or increments a metric.\n>\n> Remediation: correct the writer to emit epoch **seconds** as a Number, then backfill the affected items. A millisecond value divided by 1,000 recovers the intended timestamp. Confidence: sampled (n=10"
       },
       "without_skill": {
         "eval_id": "ddb-data-health-ttl-not-deleting",
@@ -471,15 +471,15 @@
           "tool_calls": 2,
           "token_counts": {
             "input_tokens": 4,
-            "output_tokens": 4473,
-            "cache_read_input_tokens": 48908,
-            "cache_creation_input_tokens": 34831
+            "output_tokens": 3478,
+            "cache_read_input_tokens": 48906,
+            "cache_creation_input_tokens": 34845
           }
         },
         "timing": {
-          "elapsed_seconds": 73.21156683401205
+          "elapsed_seconds": 61.345968000008725
         },
-        "raw_output": "The `dynamodb-data-health-inspection` skill isn't installed in this session, so I applied its finding conventions as documented in the file (status codes, redacted key digests, control-plane vs. sample evidence separation) rather than loading it. No AWS calls made.\n\n## Finding: TTL is enabled but nothing is eligible for deletion \u2014 scale bug in `expiresAt`\n\n**Severity: high** \u2014 silent unbounded growth on a table whose data is supposed to be ephemeral.\n\n### What the data shows\n\n| Signal | Value | Scope |\n|---|---|---|\n| `ttl.state` | `ENABLED` on `expiresAt` | control plane |\n| `TimeToLiveDeletedItemCount` 14d | `0`, and `0` on all 14 daily buckets | control plane, full table |\n| `malformed_scale` | **947 / 1000** sampled items | sample |\n| `expired` | `0` | sample |\n| `pending` | `53` | sample |\n| `missing` / `malformed_type` / `malformed_value` / `suspicious_future` | `0` | sample |\n| Table | 214,000,000 items / 96 GB, mean 448 B | control plane |\n\nTwo independent signals agree, which is what makes this conclusive rather than suggestive: the sample says 94.7% of items carry an unusable TTL value, and the CloudWatch deletion metric \u2014 full-table scope, not sampled \u2014 is flat zero for 14 consecutive days, not merely low. `status: \"OK\"` on that metric means the metric published data and the data was genuinely zero; that's different from `NoData`.\n\nThe 53 `pending` items are the tell that TTL itself is wired up correctly and processing the table: those are seconds-scale values with a legitimate future expiry, waiting their turn. So the sweeper is running and finding nothing to do.\n\n### Root cause\n\nThe writer stores `expiresAt` in **milliseconds** (~1.79e12) where DynamoDB TTL requires **Unix epoch seconds**. A millisecond timestamp is still a valid Number, so TTL accepts the attribute, compares it to current epoch seconds, concludes the item expires tens of thousands of years from now, and skips it. Nothing is malformed from TTL's point of view \u2014 the items are simply immo"
+        "raw_output": "TTL on `sessions-prod` is enabled and configured correctly at the table level, but 94.7% of the items are written with millisecond timestamps in a field DynamoDB reads as seconds \u2014 so they're dated ~year 58,000 and will never expire.\n\nNote: the `dynamodb-data-health-inspection` skill isn't installed in this session, so this is my own read of the file, not skill output.\n\n## What the data shows\n\nTwo independent signals agree:\n\n**Control plane** (`ttl` block, lines 202\u2013226): `state: ENABLED`, `attribute_name: expiresAt`, and `TimeToLiveDeletedItemCount` = **0 for all 14 days**, not `NoData`. The metric is publishing; it's publishing zero. TTL is running and finding nothing to delete.\n\n**Data plane** (`sample.ttl_evaluation`, lines 293\u2013303) \u2014 1000 items sampled, 1.4% size drift so the sample is representative:\n\n| bucket | count |\n|---|---|\n| `malformed_scale` | **947** |\n| `pending` (valid, not yet due) | 53 |\n| `expired` (due, awaiting sweep) | 0 |\n| `missing` / `malformed_type` / `malformed_value` / `suspicious_future` | 0 |\n\nNothing is missing the attribute and nothing has the wrong type \u2014 the attribute is a number, it's just the wrong unit.\n\n## Root cause\n\nThe writer stores `expiresAt` in **milliseconds**; DynamoDB TTL requires **Unix epoch seconds**.\n\nDo the arithmetic on the sampled value: `1.79e12` read as milliseconds is ~2026-09-22, about 12 days after the 2026-09-10 collection \u2014 exactly the session lifetime you'd expect. Read as seconds, which is what TTL does, it lands roughly 56,700 years out. TTL only deletes items whose timestamp is in the past (and within the last 5 years), so these items are permanently immortal.\n\nThis is the `Date.now()` signature: JavaScript's `Date.now()` returns milliseconds, and the correct form is `Math.floor(Date.now() / 1000)`. The 53 correctly-scaled items are the tell \u2014 one code path (or one deploy) got it right, the dominant one didn't.\n\nThe file's own note says \"roughly 5,000 years in the future\"; the actual value is ~56,700 "
       },
       "delta_pass_rate": 0.0
     },
@@ -529,15 +529,15 @@
           "tool_calls": 2,
           "token_counts": {
             "input_tokens": 6,
-            "output_tokens": 3230,
-            "cache_read_input_tokens": 108424,
-            "cache_creation_input_tokens": 55570
+            "output_tokens": 3479,
+            "cache_read_input_tokens": 109664,
+            "cache_creation_input_tokens": 57364
           }
         },
         "timing": {
-          "elapsed_seconds": 58.1517843749898
+          "elapsed_seconds": 63.01491258299211
         },
-        "raw_output": "I'll read the context file.**`orders-by-status`** \u2014 rule **IX-01** (unused GSI, High).\n\n## Evidence\n\n| Field | Value |\n|---|---|\n| `consumed_read_sum_30d` | **0** (a measured zero, not `null`) |\n| `metric_coverage_days` | **30** \u2014 full window covered, so the zero is admissible |\n| `consumed_write_sum_30d` | **42,800,000** write units |\n| `index_size_bytes` | **379 GB** vs 412 GB base table |\n| `amplification_ratio` | **0.92\u00d7** |\n| `projection_type` | `ALL` |\n| `read_throttle_sum_14d` / `write_throttle_sum_14d` | 0 / 0 |\n\nThe other index, `orders-by-date`, is genuinely read (12,400,000 read units over 30 days), so it is not the answer.\n\n**GSI `orders-by-status` served zero reads in 30 days while consuming 42,800,000 write units.** An unread index is pure cost: every write to the base table that touches its key attributes is replicated into it, and it holds 379 GB of storage (0.92\u00d7 the base table). It also adds a throttling surface \u2014 if this index throttles, it applies backpressure that blocks writes to the base table it is not serving.\n\n> Remediation: confirm with the owning application that no query path uses this index, then delete it. Deleting a GSI does not affect the base table or its other indexes. If it exists for a rare batch or disaster-recovery query, document that so the next review does not re-raise this finding.\n\nA genuinely unused index is the *rarest* index problem in real support data (~3% of index cases, against 28% for item-collection limits). So treat the zero read count as a prompt to ask the owner, not as a conclusion \u2014 confirm, then delete.\n\n## Two findings that compound the cost on the same index\n\n**IX-04 \u00b7 Over-broad GSI projection \u00b7 Medium** \u2014 `orders-by-status` projects ALL attributes and occupies 379 GB, 0.92\u00d7 the base table's 412 GB. A full projection duplicates every attribute into the index, so both storage and write cost are roughly doubled for items the index covers. That is the right trade only when queries against the index genuinely"
+        "raw_output": "I'll read the file first.**`orders-by-status`** \u2014 it is a write-only GSI: zero reads in 30 days, 42.8M write units consumed.\n\n## IX-01 \u00b7 Unused GSI \u00b7 High\n\n> **GSI `orders-by-status` served zero reads in 30 days while consuming 42,800,000 write units.** An unread index is pure cost: every write to the base table that touches its key attributes is replicated into it, and it holds 379 GB of storage (0.92\u00d7 the base table). It also adds a throttling surface \u2014 if this index throttles, it applies backpressure that blocks writes to the base table it is not serving.\n>\n> Remediation: confirm with the owning application that no query path uses this index, then delete it. Deleting a GSI does not affect the base table or its other indexes. If it exists for a rare batch or disaster-recovery query, document that so the next review does not re-raise this finding.\n\n## Evidence\n\n| Field | Value | Why it matters |\n|---|---|---|\n| `consumed_read_sum_30d` | `0` | A **measured zero**, not `null` \u2014 the metric published and reported no reads |\n| `metric_coverage_days` | `30` | Full 30-day window covered, so a monthly batch job would have appeared. This is what separates IX-01 from IX-02 |\n| `consumed_write_sum_30d` | `42,800,000` | The index is being written to continuously \u2014 cost with no read benefit |\n| `index_size_bytes` | `379 GB` | ~$95/month in us-east-1 standard-class storage alone |\n| `projection_type` / `amplification_ratio` | `ALL` / `0.92` | Near-full duplicate of the 412 GB table \u2014 also fires **IX-04** (over-broad projection) |\n| `autoscaling` | `read: false, write: false` | Fires **IX-05**: provisioned capacity sized for an index serving zero reads |\n\nThe contrast with the sibling index is the cleanest corroboration: `orders-by-date` is `KEYS_ONLY`, 41 GB (0.1 amplification), and consumed 12.4M read units over the same 30 days. Same table, same window, same metric \u2014 so the zero on `orders-by-status` reflects real disuse, not a missing metric.\n\nTwo caveats before anyone delete"
       },
       "without_skill": {
         "eval_id": "ddb-data-health-unused-index",
@@ -579,18 +579,18 @@
         "pass_rate": 1.0,
         "summary": "Without skill: 100% assertions passed",
         "execution_metrics": {
-          "tool_calls": 2,
+          "tool_calls": 1,
           "token_counts": {
             "input_tokens": 4,
-            "output_tokens": 1000,
-            "cache_read_input_tokens": 47956,
-            "cache_creation_input_tokens": 34714
+            "output_tokens": 1777,
+            "cache_read_input_tokens": 48887,
+            "cache_creation_input_tokens": 34414
           }
         },
         "timing": {
-          "elapsed_seconds": 31.084202666999772
+          "elapsed_seconds": 38.988281500001904
         },
-        "raw_output": "I'll read the file first.**`orders-by-status`** \u2014 a full-projection GSI that has served zero reads in 30 days while absorbing all the write cost.\n\nEvidence in the file:\n\n| Signal | Value |\n|---|---|\n| `consumed_read_sum_30d` | **0** \u2014 no query traffic at all |\n| `metric_coverage_days` | 30 \u2014 full window, so the zero is real, not a gap |\n| `consumed_write_sum_30d` | 42,800,000 WCU \u2014 more than the base table's 14d writes |\n| `index_size_bytes` | 379 GB (`projection_type: ALL`, amplification 0.92) |\n| `index_status` | ACTIVE \u2014 not backfilling |\n\nSo you're paying twice: ~379 GB of duplicated storage plus a write unit on the index for every base-table write, for an index nothing reads.\n\nThe contrast with the sibling index is what makes the case solid. `orders-by-date` on the same table has the same `metric_coverage_days: 30` and does show 12.4M reads \u2014 so read metrics are publishing correctly for this table. `orders-by-status`'s zero is an absence of traffic, not an absence of telemetry.\n\nTwo things worth noting before you act:\n\n- **30 days doesn't rule out a low-frequency reader.** A monthly/quarterly report job, a runbook query, or a DR path could read this index outside the window. Check application code for `IndexName: 'orders-by-status'` before deleting \u2014 GSI deletion is irreversible and rebuilding a 379 GB full-projection index on 48.2M items is a long, expensive backfill.\n- **Deleting it also relieves the write throttling.** The table shows 14,622 write throttle events and 9,310 throttled requests over 14 days, concentrated on `c#8f3a2b91` (184,320 vs. ~21k for the next key \u2014 roughly 9\u00d7 the runner-up). Every base write currently fans out to both GSIs, and `orders-by-status` has no autoscaling on read or write. Dropping it removes a write amplification factor from the hot partition, though the key skew itself remains the underlying problem.\n\nThe right sequence: confirm no readers in code, then delete the index \u2014 don't reduce its provisioned capacity as an intermedi"
+        "raw_output": "I'll read the file first.**`orders-by-status`** \u2014 it absorbs every write and serves zero reads.\n\nEvidence from the file (`orders-prod` \u2192 `indexes.gsi.items[0]`):\n\n| Signal | Value | Why it matters |\n|---|---|---|\n| `consumed_read_sum_30d` | **0** | No read traffic at all |\n| `metric_coverage_days` | **30** | Full 30-day window \u2014 the zero is real data, not a metrics gap |\n| `consumed_write_sum_30d` | **42,800,000** | Fully paid write path, replicating base-table writes |\n| `index_size_bytes` | **379 GB** | vs. 412 GB base table |\n| `amplification_ratio` | **0.92** | `projection_type: ALL` duplicates ~92% of the table |\n| `item_count` | 48,200,000 | Identical to base table \u2014 not a sparse index, no subset benefit |\n\nSo on `PROVISIONED` billing you're paying twice: ~379 GB of duplicate storage (~$90/mo at us-east-1 list price) plus WCUs for 42.8M index writes, and getting nothing back.\n\nThe contrast inside the same table is what makes it conclusive: `orders-by-date` has `consumed_read_sum_30d: 12,400,000` under identical 30-day coverage, so read metrics are publishing correctly for this table \u2014 `orders-by-status`'s zero isn't an instrumentation artifact. It's also the cheap one by design (`KEYS_ONLY`, 41 GB, `amplification_ratio: 0.1`).\n\nTwo caveats before acting:\n\n1. Zero reads over 30 days rules out routine traffic, not a quarterly report, DR runbook, or on-call query path. Confirm with the owning team and check CloudTrail/app code for `IndexName=orders-by-status` before deleting \u2014 GSI deletion is irreversible, and recreating one on a 48M-item table means a long, expensive backfill.\n2. The write amplification is likely feeding the table's throttling problem: 14,622 write-throttle events and 9,310 throttled requests over 14 days, with `orders-by-date` itself showing 2,210 write throttles. Every base-table write fans out to both GSIs, and `orders-by-status` has autoscaling off on both read and write. Dropping it removes roughly half the index write load.\n\nSeparately in "
       },
       "delta_pass_rate": 0.0
     },
@@ -637,18 +637,18 @@
         "pass_rate": 1.0,
         "summary": "With skill: 100% assertions passed",
         "execution_metrics": {
-          "tool_calls": 6,
+          "tool_calls": 5,
           "token_counts": {
             "input_tokens": 10,
-            "output_tokens": 4533,
-            "cache_read_input_tokens": 217475,
-            "cache_creation_input_tokens": 47663
+            "output_tokens": 3758,
+            "cache_read_input_tokens": 219677,
+            "cache_creation_input_tokens": 47611
           }
         },
         "timing": {
-          "elapsed_seconds": 73.61710408399813
+          "elapsed_seconds": 66.08833216701169
         },
-        "raw_output": "I'll read the context file first.**Yes \u2014 `c#8f3a2b91` is a confirmed hot partition on `orders-prod`**, with the strong evidence path (HK-02, **High**). Snapshot: account `111122223333`, `us-east-1`, collected 2026-09-10T12:00:00Z (4 days stale).\n\n## What proves it\n\n> **Partition key `c#8f3a2b91` is a confirmed hot partition.** Contributor Insights ranks it at `184,320` versus `21,400` for the next key (`8.6`\u00d7 higher), and the table recorded `14,622` write key-range throughput throttle events over `14 days`. A key-range throttle event is the direct signal that a single partition's hard ceiling \u2014 **1,000 WCU/s and 3,000 RCU/s** \u2014 was exceeded, independent of how much capacity the table has in aggregate. Aggregate consumed capacity over the same window was `88.4 M RCU and 20.1 M WCU \u2014 roughly 73 RCU/s and 17 WCU/s averaged over the window, i.e. a fraction of one partition's ceiling`.\n>\n> Remediation, in the order real cases are resolved:\n> 1. **Handle the throttles the client already sees** \u2014 retry with exponential backoff plus full jitter, and resubmit `UnprocessedItems` from `BatchWriteItem`. This is the single most common resolution and it stops data loss today, before any re-modelling.\n> 2. **Give the table headroom** \u2014 raise provisioned capacity (which also adds backend partitions) or move to on-demand. This buys time; it does not fix a key whose traffic exceeds one partition's ceiling.\n> 3. **Raise the key's cardinality** \u2014 write sharding: append a calculated suffix to the partition key so traffic spans partitions, and scatter-gather on read. This is the durable fix, and the only one that removes the ceiling.\n> 4. **For a read-heavy hot key**, add DAX or an application cache in front of the table.\n\nSteps 1 and 2 are mitigations; **step 3 is the cure** \u2014 don't stop at raising capacity, or the same ceiling returns at the next traffic peak.\n\nTwo supporting details from the same data:\n\n| Evidence | Value |\n|---|---|\n| `WriteKeyRangeThroughputThrottleEvents` sum, 14 d"
+        "raw_output": "I'll read the file first.**Yes \u2014 `c#8f3a2b91` is a confirmed hot partition on `orders-prod`, and no, the sampled key distribution does not prove it.** Read from `table-context.json` (account 111122223333, us-east-1, collected 2026-09-10T12:00:00Z \u2014 5 days stale as of today). No AWS APIs called.\n\n## HK-02 \u00b7 Hot key confirmed with throttling \u00b7 High\n\n**Partition key `c#8f3a2b91` is a confirmed hot partition.** Contributor Insights ranks it at 184,320 versus 21,400 for the next key (`c#1d77e402`) \u2014 8.6\u00d7 higher \u2014 and the table recorded 14,622 `WriteKeyRangeThroughputThrottleEvents` over 14 days. A key-range throttle event is the direct signal that a single partition's hard ceiling \u2014 **1,000 WCU/s and 3,000 RCU/s** \u2014 was exceeded, independent of how much capacity the table has in aggregate. Aggregate consumed capacity over the same window was 88,400,000 RCU and 20,100,000 WCU, with 0 read throttles \u2014 i.e. the table is not short of capacity in aggregate; one key is over its partition ceiling.\n\nRemediation, in the order real cases are resolved:\n\n1. **Handle the throttles the client already sees** \u2014 retry with exponential backoff plus full jitter, and resubmit `UnprocessedItems` from `BatchWriteItem`. This is the single most common resolution and it stops data loss today, before any re-modelling.\n2. **Give the table headroom** \u2014 raise provisioned capacity (which also adds backend partitions) or move to on-demand. This buys time; it does not fix a key whose traffic exceeds one partition's ceiling.\n3. **Raise the key's cardinality** \u2014 write sharding: append a calculated suffix to the partition key so traffic spans partitions, and scatter-gather on read. This is the durable fix, and the only one that removes the ceiling.\n4. **For a read-heavy hot key**, add DAX or an application cache in front of the table.\n\nSteps 1 and 2 are mitigations; step 3 is the cure. Don't stop at step 2 \u2014 you'll meet the same ceiling at the next traffic peak. Note this is write-side: `key_range.read_su"
       },
       "without_skill": {
         "eval_id": "ddb-data-health-hot-key-authority",
@@ -690,18 +690,18 @@
         "pass_rate": 1.0,
         "summary": "Without skill: 100% assertions passed",
         "execution_metrics": {
-          "tool_calls": 2,
+          "tool_calls": 1,
           "token_counts": {
-            "input_tokens": 6,
-            "output_tokens": 2538,
-            "cache_read_input_tokens": 86795,
-            "cache_creation_input_tokens": 34838
+            "input_tokens": 4,
+            "output_tokens": 1802,
+            "cache_read_input_tokens": 48904,
+            "cache_creation_input_tokens": 34432
           }
         },
         "timing": {
-          "elapsed_seconds": 48.634966167010134
+          "elapsed_seconds": 39.740541999985
         },
-        "raw_output": "I'll read the file first.## Yes \u2014 `c#8f3a2b91` on `orders-prod`\n\nTwo independent signals, both traffic-based:\n\n1. **Contributor Insights throttled-keys rule** (`hot_keys`, `mode: throttled-keys-only`, `rule_kind: throttled-keys`): `c#8f3a2b91` = 184,320 vs. 21,400 for the next key \u2014 **8.6\u00d7 the runner-up**, and larger than all other contributors combined. Because the rule kind is *throttled*-keys rather than most-accessed, every one of those data points is a request that was actually rejected on that key.\n2. **The cause-specific throttle metric agrees**: `throttling.key_range.write_sum_14d` = 14,622, and `throttling.events.write_sum_14d` = 14,622 \u2014 identical. 100% of write throttling in the last 14 days is attributed to a key range, not to table-level capacity exhaustion. Reads are 0 on both.\n\nThat combination is what makes it proof rather than suspicion: the key-range metric establishes *that* throttling was caused by key skew, and Contributor Insights names *which* key. (Note the concurrent 2,210 write throttles on the `orders-by-date` GSI are a separate, index-scoped problem.)\n\n## No \u2014 the sampled distribution proves nothing\n\n`sample.partition_key_distribution` reports `distinct_keys: 902`, `top_key_share_pct: 4.1`, digest `c#8f3a2b91`. The digest matching is eye-catching, but this data can't establish hotness:\n\n- **Wrong quantity.** It measures how items are distributed across keys \u2014 storage and item count. Hotness is a property of *request rate*. A key holding 4% of items can be completely idle; a key holding one item can absorb all your traffic.\n- **The sample isn't random.** `mode: shape`, 1000 items via 4 segments \u00d7 4 pages. Scan pages return items contiguous in partition-key hash order, so items sharing a partition key sit adjacent and land in the same page together. Any clustering you see is largely scan locality, not the table's real distribution.\n- **The sample is negligible.** `pct_of_table: 2e-06` \u2014 1,000 of 48.2M items. And 902 distinct keys across 1,0"
+        "raw_output": "I'll read the file first.**Yes \u2014 `c#8f3a2b91` is a hot partition key on orders-prod, and the control-plane evidence is what proves it.**\n\nThe proof chain (table-context.json:30\u201380):\n\n- Contributor Insights rule `...PKC-orders-prod-1` runs in `throttled-keys-only` mode, so its contributors are *keys that got throttled*, not merely keys that got traffic. `c#8f3a2b91` scores **184,320** vs. 21,400 and 19,850 for the next two \u2014 an 8.6\u00d7 gap, not a gentle taper.\n- The cause-specific metric agrees: `throttling.key_range.write_sum_14d = 14,622` with `status: OK`. That metric attributes throttling to a **key range**, which distinguishes a hot key from plain under-provisioning. Its value matches `throttling.events.write_sum_14d` exactly (14,622), so essentially all table write throttling is key-range attributable.\n- It's write-side only: every read throttle counter is 0.\n\nThat combination \u2014 a throttled-keys contributor with a sharp head, plus a non-null key-range write metric matching total write throttles \u2014 is about as strong as this evidence gets. (Contrast `legacy-sessions-prod`, where CI shows sharper concentration but the key-range metric is `NotAvailable` and the rule is `most-accessed`, so the same conclusion would rest on weaker ground.)\n\n**No \u2014 the sampled partition key distribution does not prove it, and it shouldn't be cited as if it did.**\n\n`sample.partition_key_distribution` (table-context.json:181\u2013185) reports 902 distinct keys across 1,000 items with `top_key_digest: c#8f3a2b91` at `top_key_share_pct: 4.1`. It's tempting because the digest matches, but:\n\n1. **Wrong quantity.** The sample measures how *items at rest* distribute across keys. A hot partition is a *request-rate* phenomenon. A key with one item can be hammered thousands of times per second; a key with many items can be read never.\n2. **No statistical power.** 1,000 items is `pct_of_table: 2e-06` of a 48.2M-item table. 4.1% of 1,000 is ~41 items. And parallel-Scan segments read contiguous storage rat"
       },
       "delta_pass_rate": 0.0
     },
@@ -743,15 +743,15 @@
           "tool_calls": 3,
           "token_counts": {
             "input_tokens": 6,
-            "output_tokens": 3743,
-            "cache_read_input_tokens": 122272,
-            "cache_creation_input_tokens": 59185
+            "output_tokens": 5212,
+            "cache_read_input_tokens": 113764,
+            "cache_creation_input_tokens": 60193
           }
         },
         "timing": {
-          "elapsed_seconds": 63.43424404101097
+          "elapsed_seconds": 80.56421029102057
         },
-        "raw_output": "## Hot key dimension\n\n`hot_keys.status` is `AccessDenied`, so **no HK rule fires** \u2014 HK-01 requires `NotConfigured`, HK-06 requires `NoData`, HK-04 requires key-range throttles > 0 (they're 0), and HK-05 is `[B]` with sampling declined. A denied check is not a state, so it routes to the **\"Unable to verify\" template**, not to any HK rule:\n\n> **Hot keys could not be assessed** \u2014 `DescribeContributorInsights` returned `AccessDenied`. Grant `dynamodb:DescribeContributorInsights` and `cloudwatch:GetInsightRuleReport`, then re-run. No conclusion about hot keys should be drawn from this report.\n\nDimensions row: `| Hot keys | \u2753 not assessed | not determinable |` \u2014 \u2753 is mandatory (format \u00a7Dimensions: any `AccessDenied` input is \u2753, never \u2705), and pre-render checks 2, 3 and 14 all bind here. The zero throttle events must **not** be read as \"no hot key\"; they corroborate nothing about key distribution on their own.\n\nNot Assessed rows required: hot keys (`AccessDenied`), item-size distribution / 400 KB proximity and per-item TTL state (sampling declined), LSI utilization (index-scoped metrics do not exist for LSIs).\n\n## Health rating\n\n**Low \u2014 needs attention.**\n\n| Step | Result |\n|---|---|\n| Highest severity finding | **High** \u2014 IX-08, item collection estimated at 9.1 GB against the 10 GB LSI limit |\n| Base rating | Low (any High finding \u2192 Low) |\n| Cap: `AccessDenied` present | cap at Medium \u2014 no effect, caps only lower |\n| Cap: `sampling.status != completed` | cap at Medium \u2014 no effect |\n| Indeterminate check | not triggered \u2014 only one dimension is \u2753 |\n\nOther findings that land: IX-07 (Low, LSI projects ALL) and IS-05 (Info, mean 4.3 KB from metadata, with the sampling-declined note). TTL is \u2705 from CloudWatch alone \u2014 2.14 M deletions over 14 days, so no TTL rule fires. Item size cannot be \u2705 (IS-05 is a finding for it and the distribution was never sampled); render it \u26a0\ufe0f / \"table metadata only\". Both Medium caps must still be *stated* in the report even though neither changes th"
+        "raw_output": "I'll read the context file and the relevant skill references.## Hot key dimension \u2192 \u2753, never a verdict\n\n**Dimensions row:**\n\n| Dimension | Result | Assessed via |\n|---|---|---|\n| Hot keys | `\u2753 Not determinable \u2014 Contributor Insights access denied` | `not determinable` |\n\nForced by two rules that agree: report-format.md:49 (\"A dimension with any `AccessDenied` or `ToolingFailure` input is \u2753, never \u2705\") and SKILL.md's \"Never report 'no hot key' when Contributor Insights was unavailable; report 'not determinable' instead.\"\n\n**Findings entry** uses the \"Unable to verify\" template (finding-logic.md:566) verbatim \u2014 **not** a HK rule ID:\n\n> **Hot keys could not be assessed** \u2014 Contributor Insights returned `AccessDenied`. Grant `dynamodb:DescribeContributorInsights` and `cloudwatch:GetInsightRuleReport` on the table and re-run. No conclusion about hot keys should be drawn from this report.\n\n**Not Assessed row:** `Hot keys | AccessDenied on dynamodb:DescribeContributorInsights | Grant the read permissions and re-run`.\n\nThree traps to avoid:\n\n- **Do not fire HK-01.** Its second trigger clause (\"every target's `ci_status != ENABLED`\") is vacuously true on this table's empty `targets: []`, but `status` is `AccessDenied` \u2014 asserting CI is not enabled would be inferring state from a failed check.\n- **Do not fire HK-04.** It requires `key_range.*_sum_14d > 0`; both are measured `0` here.\n- **Do not read the clean throttle metrics as absence of a hot key.** Zero throttling rules out HK-02, not HK-03-style concentration \u2014 that is only visible in Contributor Insights.\n\n## Health rating \u2192 **Low \u2014 needs attention**\n\nDriven by a High finding, **IX-08** (item collection estimated at 9.1 GB against the 10 GB LSI limit; `by-actor` LSI present). Also firing: IX-07 (Low, LSI projects ALL) and IS-05 (Info). TTL fires nothing \u2014 `TimeToLiveDeletedItemCount` sum is 2.14 M over 14 days, measured healthy.\n\nBoth applicable caps are inoperative here, and you must still say why they were considered:\n"
       },
       "without_skill": {
         "eval_id": "ddb-data-health-accessdenied-not-healthy",
@@ -785,18 +785,18 @@
         "pass_rate": 1.0,
         "summary": "Without skill: 100% assertions passed",
         "execution_metrics": {
-          "tool_calls": 12,
+          "tool_calls": 10,
           "token_counts": {
-            "input_tokens": 16,
-            "output_tokens": 7410,
-            "cache_read_input_tokens": 352604,
-            "cache_creation_input_tokens": 64702
+            "input_tokens": 18,
+            "output_tokens": 4693,
+            "cache_read_input_tokens": 416513,
+            "cache_creation_input_tokens": 56544
           }
         },
         "timing": {
-          "elapsed_seconds": 218.669291083992
+          "elapsed_seconds": 132.15405266702874
         },
-        "raw_output": "I'll read the context file and find the governing skill.The skill exists on disk. Reading it.The skill isn't installed in this session; I read it from its source at `~/Desktop/Nebula/tools-for-devops-agent/skills/dynamodb-data-health-inspection/`.\n\n## Hot key dimension \u2192 \u2753 \"not determinable\", via the \"Unable to verify\" template\n\nNo `HK-` rule fires. This is the important part:\n\n- **HK-01 must not fire.** Its trigger is `status == \"NotConfigured\"`, or every target's `ci_status != \"ENABLED\"`. Here `status` is `AccessDenied` and `targets` is `[]` \u2014 an empty target list satisfies the second clause only vacuously. Firing HK-01 would assert Contributor Insights *is not enabled*, which is an inferred state, barred by \"No interpretation without data\u2026 never infer state\" (SKILL.md:320) and \"never let a failed check produce a 'healthy' verdict for its dimension.\"\n- **HK-06 must not fire** \u2014 it requires `status == \"NoData\"` (enabled, empty window). HK-01 vs HK-06 are explicitly mutually exclusive.\n- **HK-04 must not fire** \u2014 `throttling.key_range` read/write `sum_14d` are both `0`, not `> 0`.\n\nInstead, use `finding-logic.md`'s **\"Unable to verify\"** template verbatim:\n\n> **Hot keys could not be assessed** \u2014 `dynamodb:DescribeContributorInsights` / `cloudwatch:GetInsightRuleReport` returned `AccessDenied`. Grant those two read-only actions and re-run. No conclusion about hot keys should be drawn from this report.\n\nDimensions matrix row:\n\n| Dimension | Result | Assessed via |\n|---|---|---|\n| Hot keys | \u2753 Not determinable \u2014 Contributor Insights checks returned `AccessDenied` | not determinable |\n\n`report-format.md:49` \u2014 \"A dimension with any `AccessDenied` or `ToolingFailure` input is \u2753, never \u2705.\" The all-zero throttle metrics do **not** rescue it: HK-03 (concentration without throttling) is undetectable without Contributor Insights, and the skill states \"Never report 'no hot key' when Contributor Insights was unavailable.\" It also goes in **Not Assessed** (`AccessDenied on dynamo"
+        "raw_output": "I'll read the context file first.**Hot keys \u2192 \u2753 \"not determinable\", never \u2705 and never \"no hot key.\"** `hot_keys.status: \"AccessDenied\"` matches none of HK-01 (`NotConfigured`), HK-04 (needs `key_range > 0`; here it's 0/0), or HK-06 (`NoData`), so it isn't a hot-key rule at all \u2014 it's the **\"Unable to verify\" template** (finding-logic.md:562): \"*Hot keys could not be assessed \u2014 DescribeContributorInsights returned AccessDenied. \u2026No conclusion about hot keys should be drawn from this report.*\"\n\nThat entails, in order:\n\n1. **Pre-flight permissions audit fires first** (SKILL.md:229) \u2014 the two-option prompt (stop and re-run vs. continue with reduced accuracy), and you wait rather than proceeding by default.\n2. **Dimensions matrix:** `Hot keys | \u2753 not determinable | Contributor Insights AccessDenied`. Pre-render check 3 forbids \u2705 for any dimension with an `AccessDenied` input.\n3. **Not Assessed row:** hot keys / `AccessDenied on dynamodb:DescribeContributorInsights` / grant the read permission and re-run. HK-05 (sampled item-count concentration) is also unavailable, since sampling was declined.\n4. **Sampling Provenance:** `status: declined`, reason \"operator declined data-plane sampling,\" with the lower rows replaced by the line naming what went unassessed \u2014 item-size distribution (IS-01\u2013IS-04) and per-item TTL state (TTL-03\u2013TTL-05).\n\n**Health rating: `Low \u2014 needs attention`.** IX-08 fires at **High** \u2014 one LSI plus an estimated 9.1 GB item collection against the 10 GB limit (\u2265 8 GB trigger), and the skill says to prioritize it above other index findings. Both Medium caps apply in principle (AccessDenied input; `sampling.status != \"completed\"`) but a cap can only lower a rating, so neither changes Low. The Indeterminate cap does **not** apply: only one dimension is \u2753 \u2014 item size is still assessed from table metadata (IS-05, mean 4,293 B) and TTL from CloudWatch (2.14 M deletions/14 d, healthy), so you're at one \u2753, not two.\n\nTwo details the report must also carry: the 9.1 "
       },
       "delta_pass_rate": 0.0
     },
@@ -818,7 +818,7 @@
           {
             "text": "contains '8884' or contains '8,884' or contains 'write'",
             "passed": true,
-            "evidence": "OR satisfied by: contains '8884' \u2014 Substring found: '8884'",
+            "evidence": "OR satisfied by: contains '8,884' \u2014 Substring found: '8,884'",
             "method": "deterministic",
             "confidence": 1.0,
             "uncertain": false
@@ -843,18 +843,18 @@
         "pass_rate": 1.0,
         "summary": "With skill: 100% assertions passed",
         "execution_metrics": {
-          "tool_calls": 2,
+          "tool_calls": 3,
           "token_counts": {
-            "input_tokens": 6,
-            "output_tokens": 1690,
-            "cache_read_input_tokens": 108472,
-            "cache_creation_input_tokens": 42727
+            "input_tokens": 8,
+            "output_tokens": 1957,
+            "cache_read_input_tokens": 163964,
+            "cache_creation_input_tokens": 44371
           }
         },
         "timing": {
-          "elapsed_seconds": 35.93206529098097
+          "elapsed_seconds": 43.19097449997207
         },
-        "raw_output": "I'll read the context file.**No \u2014 sampling should not be skipped.** The skill's skip condition is conjunctive and requires all three: `ItemCount` 0 **and** `TableSizeBytes` 0 **and** `ConsumedWriteCapacityUnits` 0-or-`NoData`. Here `consumed_write_sum_14d` is **8884**, so the third clause fails.\n\nThat's exactly the stale-metadata case the skill calls out: `ItemCount`/`TableSizeBytes` refresh only ~every 6 hours, so a table loaded minutes ago reports both as `0` while holding items. The write capacity is the corroborating evidence, and the table's own `_note` confirms a 2001-item bulk load.\n\nWhat follows from that:\n\n- **Say the metadata is stale**, not that the table is empty.\n- **Size the sample from the `> 1 M, or unknown/stale` tier** (`references/sampling-protocol.md:76`) \u2014 the safe upper bound: Pass 1 at 4 segments \u00d7 `Limit 250`; Pass 2 at 4 segments \u00d7 `Limit 25\u201350`.\n- **Don't derive cost from a mean item size** \u2014 `mean_item_size_bytes` is `null`, so you can't predict where the 1 MB page cap lands. Quote an upper bound of `pages \u00d7 128` RCU: ~8 pages \u2192 **~1024 RCU max**, and label it an upper bound.\n- **Still gate on consent.** `sample.status` is `not_yet_run` / awaiting operator consent; nothing here bypasses the Phase B prompt.\n- Report `items_sampled` as what actually came back, and compute `pct_of_table` from the sampled count against a table size you should describe as unknown rather than 0.\n\nOne inconsistency worth flagging in the skill itself: `references/sampling-protocol.md:13` lists `ItemCount > 0` as a flat precondition for Phase B, which read alone would wrongly skip this table. SKILL.md's stale-metadata rule and the protocol's own `unknown/stale` tier row both contradict that line, so the precondition should read something like \"`ItemCount > 0`, **or** `ItemCount` is 0 while writes are present (stale metadata).\"\n\nSeparately, `hot_keys.status` is `NoData` with CI rules created recently \u2014 that's **not determinable**, not \"no hot key,\" regardless of the"
+        "raw_output": "I'll read the context file.**No \u2014 sampling should not be skipped.** `freshly-loaded-prod` fails the skip test.\n\nSKILL.md's empty-table skip requires **all three** to hold: `ItemCount` 0, `TableSizeBytes` 0, **and** `ConsumedWriteCapacityUnits` 0 or `NoData`. Here the third fails \u2014 `capacity.consumed_write_sum_14d` is **8,884**, so writes landed in the window. That makes this stale metadata, not an empty table (the file's own `_note` confirms a 2,001-item bulk load minutes before capture; `ItemCount`/`TableSizeBytes` refresh only every ~6 h).\n\nWhat that implies for the run:\n\n- **Say the metadata is stale**, don't report the table as empty, and don't compute a mean item size from `0/0` (`mean_item_size_bytes` is already `null`).\n- **Size from the `> 1 M, or unknown/stale` tier** \u2014 the safe upper bound: Pass 1 = 4 segments \u00d7 `Limit 250` \u00d7 1 page (~1,000 items, projected); Pass 2 = 4 segments \u00d7 `Limit 25\u201350` (100\u2013200 full items).\n- **Quote cost as an upper bound of `pages \u00d7 128` RCU**, not from a mean item size you can't compute \u2014 ~512 RCU per pass, ~1,024 RCU total upper bound. Report `items_sampled` as what actually came back (with only ~2,001 items present, segments will exhaust well short of the plan) and recompute `pct_of_table` from that.\n- Still **consent-gated**: present the plan with `<TableSizeBytes>`/`<ItemCount>` shown as stale, and wait.\n\nOne inconsistency worth knowing: `references/sampling-protocol.md:13` lists `ItemCount > 0` as a Phase B precondition, which read literally would skip this table. SKILL.md's stale-metadata rule and the protocol's own \"unknown/stale\" sizing tier both override it \u2014 the precondition is about genuinely-empty tables, corroborated by capacity metrics.\n\nTwo other things this table sets up, unrelated to the sampling question: `hot_keys.status` is `NoData` with Contributor Insights `ENABLED` but no contributors yet, so hot keys are **not determinable** (never \"no hot key\"); and the `orders-by-status` GSI shows `consumed_read_sum_30"
       },
       "without_skill": {
         "eval_id": "ddb-data-health-stale-item-count",
@@ -898,16 +898,16 @@
         "execution_metrics": {
           "tool_calls": 2,
           "token_counts": {
-            "input_tokens": 6,
-            "output_tokens": 2404,
-            "cache_read_input_tokens": 94675,
-            "cache_creation_input_tokens": 36032
+            "input_tokens": 4,
+            "output_tokens": 1560,
+            "cache_read_input_tokens": 48913,
+            "cache_creation_input_tokens": 34730
           }
         },
         "timing": {
-          "elapsed_seconds": 50.5029908750148
+          "elapsed_seconds": 33.280497875006404
         },
-        "raw_output": "I'll read the file first.**No \u2014 sampling should not be skipped.** The zeros are stale control-plane metadata, not evidence of an empty table.\n\nThe file's own `_note` on `freshly-loaded-prod` says it was captured minutes after a 2001-item bulk load, and that DynamoDB refreshes `ItemCount`/`TableSizeBytes` only every ~6 hours. Independent corroboration inside the same record:\n\n- `capacity.consumed_write_sum_14d: 8884` \u2014 real write capacity was consumed; an empty table consumes none.\n- The GSI shows `consumed_write_sum_30d: 8884` with `metric_coverage_days: 0`, i.e. writes landed but the metric window hasn't filled.\n- `hot_keys.status: \"NoData\"` with four CI rules `ENABLED` \u2014 the rules were just created, so no contributors yet. Also not evidence of absence.\n- `size.mean_item_size_bytes: null` \u2014 the derived field is undefined precisely because the inputs are stale, so it can't be used as a cross-check either.\n\nSo every \"zero/null\" on this table traces to metric latency, not to table state. Treat size as **unknown**, not zero.\n\nTwo further reasons sampling is the right call here:\n\n1. **It's the only thing that can answer the open question.** TTL is `ENABLED` on `expiresAt` \u2014 the same attribute name that, on `sessions-prod`, sampling revealed was written at millisecond scale in 947/1000 items (expiry ~5,000 years out). That defect is invisible to the control plane: `sessions-prod`'s TTL block reads `state: ENABLED`, `status: OK`, and its `deleted_item_count.sum_14d: 0` is exactly what a correctly-configured-but-nothing-expired-yet table looks like. On `freshly-loaded-prod` that count is `NoData`, which is even weaker. If the bulk loader wrote `expiresAt` in milliseconds, only a sample catches it.\n2. **Cost is negligible and there's no throttle risk.** ~2001 small items on `PAY_PER_REQUEST`, so a full or near-full sample costs a trivial number of RCU and can't trip provisioned capacity.\n\nOne thing the zeros *do* legitimately change: don't size the sample as a percentage of"
+        "raw_output": "**No \u2014 don't skip.** The zeros are metric staleness, not emptiness.\n\n`ItemCount`/`TableSizeBytes` are refreshed by DynamoDB only about every 6 hours, and this table's own `_note` says it was captured minutes after a 2001-item bulk load. The rest of the record contradicts \"empty\":\n\n- `capacity.consumed_write_sum_14d: 8884` \u2014 writes actually landed.\n- GSI `orders-by-status` has `consumed_write_sum_30d: 8884` with `metric_coverage_days: 0` \u2014 index backfill happened, metrics just haven't published.\n- `hot_keys.status: \"NoData\"` with four CI rules `ENABLED` and an empty `contributors` list \u2014 recently enabled, not idle.\n- `throttling` is all `null`/`NoData`, and `size.mean_item_size_bytes` is `null` \u2014 every control-plane signal for this table is unpopulated, so treating any single zero as a fact is unsound.\n\nSo the correct read is that the control plane has nothing to say about this table yet, which makes sampling the *only* way to learn anything about it \u2014 the opposite of a skip condition. Two concrete things sampling would catch that nothing else here can:\n\n1. TTL is `ENABLED` on `expiresAt` with `deleted_item_count.status: \"NoData\"`. That's exactly the setup where `sessions-prod` (same attribute name) turned out to have 947/1000 items storing millisecond-scale timestamps \u2014 a TTL that silently never fires. Only a sample's `ttl_evaluation` surfaces that.\n2. Item-size distribution and attribute shape are entirely unknown (`mean_item_size_bytes: null`), so there's no basis to judge large-item or amplification risk.\n\nCost is not an argument for skipping either: ~2001 items is a trivial scan, far below the 1000-item shape samples that cost 55\u20131044 RCU on the much larger tables.\n\nOne thing that does still gate it: `sample.status` is `\"not_yet_run\"` with reason `\"awaiting operator consent\"`. Sampling is a data-plane read against a production table, so it needs operator consent before running \u2014 but that's a consent gate, not a \"looks empty\" skip."
       },
       "delta_pass_rate": 0.0
     },
@@ -946,18 +946,18 @@
         "pass_rate": 1.0,
         "summary": "With skill: 100% assertions passed",
         "execution_metrics": {
-          "tool_calls": 4,
+          "tool_calls": 2,
           "token_counts": {
-            "input_tokens": 6,
-            "output_tokens": 2713,
-            "cache_read_input_tokens": 108851,
-            "cache_creation_input_tokens": 59906
+            "input_tokens": 4,
+            "output_tokens": 1927,
+            "cache_read_input_tokens": 56443,
+            "cache_creation_input_tokens": 55736
           }
         },
         "timing": {
-          "elapsed_seconds": 51.148990124987904
+          "elapsed_seconds": 38.39921308297198
         },
-        "raw_output": "I'll read the context file and the relevant skill references.**HK-06 \u2014 \"Contributor Insights enabled but returned no data\" \u2014 at Low severity, and the hot-key dimension must render \u2753 \"not determinable\", never \u2705.**\n\n## Why HK-06 and not another hot-key rule\n\n`hot_keys.status == \"NoData\"` with `ci_status: ENABLED` and four rules present is HK-06's exact trigger (`references/finding-logic.md:146`). The others are excluded by the cross-reference table at `finding-logic.md:603-606`:\n\n| Rule | Why it can't fire |\n|---|---|\n| HK-01 | Requires `NotConfigured`. CI *is* enabled \u2014 mutually exclusive with HK-06. |\n| HK-02 / HK-03 | Need a top contributor to compare. Zero contributors \u2192 neither can fire. |\n| HK-04 | Requires `key_range.*_sum_14d > 0`. Here both are `null` / `NoData`, so the throttling half of the trigger is unmet. |\n| HK-05 | `[B]` rule; `sample.status == \"not_yet_run\"`, so no `[B]` finding may appear (`report-format.md:170`). |\n\n## Required rendering\n\nBody verbatim from `finding-logic.md:152-162`, with `<targets>` = the base table `freshly-loaded-prod` and `<window>` = the report window (24 h retry). Then:\n\n**Evidence:** `GetInsightRuleReport` returned zero contributors for all four rules (`\u2026-PKC-/SKC-/PKT-/SKT-freshly-loaded-prod-1789090095214`) on target `table`; `DescribeContributorInsights` = `ENABLED`, mode `all-access`.\n\nTwo things must be stated correctly, not glossed:\n\n1. **The rule's \"expected empty result\" branch does not apply here.** Mode is `all-access`, not `throttled-keys-only` \u2014 an all-access rule emits contributors for *any* traffic, so an empty window is not the benign \"healthy table isn't throttling\" case. The applicable explanation is recent enablement: the rule-name suffix `1789090095214` decodes to ~2026-09-10, the collection timestamp itself, and `consumed_write_sum_14d` is 8,884 \u2014 writes happened, so the rules simply had not populated yet. Recommend re-running after a representative traffic period.\n2. **You cannot corroborate with throttl"
+        "raw_output": "**HK-06 [A] \u00b7 Contributor Insights enabled but returned no data \u00b7 Low** \u2014 and the hot-key dimension must be marked \u2753, never \u2705.\n\nWhy HK-06 and not the others:\n\n| Rule | Fires? | Reason |\n|---|---|---|\n| HK-01 | No | Trigger is `NotConfigured`; here `ci_status: ENABLED` with four rules. HK-01 and HK-06 are explicitly mutually exclusive. |\n| HK-02 / HK-03 | No | Both need a top contributor to compare; `contributors: []`. |\n| HK-04 | No | Requires `key_range.*_sum_14d > 0`. Here it is `NoData`/`null`, so throttling is not established \u2014 HK-04 would assert throttling that was never measured. |\n| HK-05 | No | `[B]` rule; `sample.status: \"not_yet_run\"`. |\n| **HK-06** | **Yes** | `hot_keys.status == \"NoData\"` \u2014 enabled, rules present, zero contributors. |\n\nReporting requirements:\n\n- Use the HK-06 body verbatim, with `<targets>` = the base table (rules `\u2026-PKC-`, `-SKC-`, `-PKT-`, `-SKT-freshly-loaded-prod-1789090095214`) and `<window>` = the 14-day query window, noting the table has only existed for minutes so the window is effectively empty.\n- **Pick the right explanation.** `mode` is `all-access`, not `throttled-keys-only`, so the \"throttled-key rules emit nothing unless throttling occurred\" branch does **not** apply. The applicable cause is recent enablement plus no representative traffic yet \u2014 so the remediation is: re-run after the table has served a representative traffic period.\n- State \"hot keys are **not determinable** from this run.\" Do not write \"no hot key,\" \"evenly distributed,\" or anything that reads as a clean bill of health. An enabled rule with no contributors is an empty window, not a verdict.\n- Do **not** route this through the \"Unable to verify\" template \u2014 nothing was `AccessDenied` or a `ToolingFailure`; the check ran and returned an empty result.\n- Corroborate rather than conclude: the throttle metrics are themselves `NoData` (`key_range` and `events` all `null`), so they cannot back-fill the gap either. Say that explicitly instead of treating absent thr"
       },
       "without_skill": {
         "eval_id": "ddb-data-health-ci-enabled-no-data",
@@ -981,30 +981,30 @@
           },
           {
             "text": "contains 'never' or contains 'not healthy' or contains 'no conclusion'",
-            "passed": true,
-            "evidence": "OR satisfied by: contains 'never' \u2014 Substring found: 'never'",
+            "passed": false,
+            "evidence": "No OR branch satisfied \u2014 contains 'never': Substring not found: 'never'; contains 'not healthy': Substring not found: 'not healthy'; contains 'no conclusion': Substring not found: 'no conclusion'",
             "method": "deterministic",
             "confidence": 1.0,
             "uncertain": false
           }
         ],
-        "pass_rate": 0.6666666666666666,
-        "summary": "Without skill: 67% assertions passed",
+        "pass_rate": 0.3333333333333333,
+        "summary": "Without skill: 33% assertions passed",
         "execution_metrics": {
-          "tool_calls": 9,
+          "tool_calls": 4,
           "token_counts": {
-            "input_tokens": 14,
-            "output_tokens": 3639,
-            "cache_read_input_tokens": 290687,
-            "cache_creation_input_tokens": 41030
+            "input_tokens": 8,
+            "output_tokens": 2298,
+            "cache_read_input_tokens": 142070,
+            "cache_creation_input_tokens": 36381
           }
         },
         "timing": {
-          "elapsed_seconds": 65.88160433399025
+          "elapsed_seconds": 46.98623216699343
         },
-        "raw_output": "I'll read the context file and find the relevant skill guidance.The file references a `dynamodb-data-health-inspection` skill. Let me check whether it's installed locally.**The `dynamodb-data-health-inspection` skill is not installed in this environment** \u2014 not in `~/.claude/skills`, not in any plugin, and not in the AWS skill registry (only the unrelated `amazon-dynamodb` skill matches). So I can't quote its rules verbatim. What follows is derived from the file's own status vocabulary, which the file says was authored to match the skill.\n\n## Answer: report it as `NoData`, not as \"no hot keys\"\n\nThe file already carries the verdict \u2014 `hot_keys.status` is **`\"NoData\"`** (line 427), even though `ci_status` is `ENABLED` with four rules.\n\nThat is the required distinction. The file uses four mutually exclusive statuses for this dimension:\n\n| Status | Meaning | Table |\n|---|---|---|\n| `OK` | Contributors returned; concentration is measurable | `orders-prod`, `legacy-sessions-prod` |\n| `NotConfigured` | CI is `DISABLED` \u2014 never instrumented | `sessions-prod` |\n| `AccessDenied` | Permission missing \u2014 unknown for a different reason | `audit-log-prod` |\n| `NoData` | CI enabled, rules exist, **zero contributors returned** | `freshly-loaded-prod` |\n\nSo an enabled-but-empty result must be reported as **indeterminate/unknown \u2014 insufficient data**, and must *not* be collapsed into `OK` or stated as \"the table has no hot keys.\" Absence of contributors is not evidence of absence of skew.\n\n**Why the file supports this, not just naming convention:**\n- The `_note` (line 404) says outright: \"Contributor Insights was enabled recently so its rules return no contributors yet.\"\n- The rule names carry the creation timestamp `1789090095214` \u2192 epoch 1789090095 s \u2248 **2026-09-10**, the same day as `collected_at: 2026-09-10T12:00:00Z`. The rules are hours old.\n- Corroborating signals: `metric_coverage_days: 0` on the GSI, `throttling.key_range.status: \"NoData\"`, and all throttle sums `null`. Nothi"
+        "raw_output": "I'll read the file first.The `dynamodb-data-health-inspection` skill isn't installed on this machine (not in `~/.claude/skills`, and the path referenced in the projects dir no longer exists), so I can't quote its rule text. Reasoning from the file's own status vocabulary:\n\n**Report it as `NoData` \u2014 inconclusive, not clean.**\n\n`freshly-loaded-prod.hot_keys.status` is `\"NoData\"`, which the file treats as distinct from the three other values it uses elsewhere: `\"OK\"` (orders-prod, legacy-sessions-prod \u2014 real contributors), `\"NotConfigured\"` (sessions-prod \u2014 CI `DISABLED`), and `\"AccessDenied\"` (audit-log-prod \u2014 permissions gap). Zero contributors *with* CI `ENABLED` and four rules is its own case: the instrumentation exists but hasn't accumulated evidence yet.\n\nSo the required framing is roughly: *\"Hot keys: no data. Contributor Insights is enabled with all four rules (PKC/SKC/PKT/SKT), but returned no contributors \u2014 the rules were created immediately before collection, so key distribution is unmeasured.\"*\n\nWhat must **not** be said: \"no hot keys found,\" \"keys are evenly distributed,\" or \"hot key check passed.\" Nor may the dimension be silently dropped from the report.\n\nTwo supporting facts in the file confirm this is a lag artifact rather than a genuinely cold table:\n- The rule names embed creation timestamp `1789090095214` (\u2248 2026-09-10), matching `collected_at` \u2014 minutes old.\n- `capacity.consumed_write_sum_14d` is 8884 and the `_note` records a 2001-item bulk load, so traffic did occur; `throttling` is likewise `NoData`, and `size.item_count`/`table_size_bytes` read 0 only because DynamoDB refreshes those every ~6 hours.\n\nThe actionable follow-up is to re-run the hot-key check after Contributor Insights has had time to publish, not to draw a conclusion now."
       },
-      "delta_pass_rate": 0.33333333333333337
+      "delta_pass_rate": 0.6666666666666667
     },
     {
       "eval_id": "ddb-data-health-null-amplification",
@@ -1041,18 +1041,18 @@
         "pass_rate": 1.0,
         "summary": "With skill: 100% assertions passed",
         "execution_metrics": {
-          "tool_calls": 5,
+          "tool_calls": 3,
           "token_counts": {
-            "input_tokens": 8,
-            "output_tokens": 1306,
-            "cache_read_input_tokens": 164089,
-            "cache_creation_input_tokens": 46339
+            "input_tokens": 6,
+            "output_tokens": 1267,
+            "cache_read_input_tokens": 110117,
+            "cache_creation_input_tokens": 44601
           }
         },
         "timing": {
-          "elapsed_seconds": 32.22458799998276
+          "elapsed_seconds": 32.60806645901175
         },
-        "raw_output": "I'll read the context file and the relevant finding-logic reference.**Something else \u2014 it fires, downgraded.** IX-04 is emitted at **Low** instead of its normal **Medium**, not skipped and not \"passing.\"\n\n`references/finding-logic.md:456-466`: the trigger is `projection_type == \"ALL\"` **and** `amplification_ratio > 0.8`. A `null` ratio can't satisfy `> 0.8`, so the second clause is unmet \u2014 but the rule has an explicit null branch that overrides the skip:\n\n> **If `amplification_ratio` is `null`** \u2026 do **not** silently skip this rule \u2026 Emit it at **Low** instead \u2026 Never let a non-computable ratio read as a passing check.\n\nFor `freshly-loaded-prod` that null is exactly the stale-metadata case the branch describes: `index_size_bytes: 0` and `table_size_bytes: 0` on a table whose `_note` records a 2001-item bulk load minutes earlier, corroborated by `consumed_write_sum_14d: 8884`. So the finding body substitutes the ratio sentence with the prescribed text \u2014 amplification not computable because `IndexSizeBytes`/`TableSizeBytes` still read 0, DynamoDB refreshes them roughly every six hours, re-run once populated.\n\nTwo things worth noting on the same index, since they interact with how you'd report it:\n\n- **IX-03 does not fire.** It needs both consumed sums to be measured zeros; `consumed_write_sum_30d` is 8884, so the index is write-only, not idle.\n- **IX-05 does not fire.** It's gated on `PROVISIONED`, and this table is `PAY_PER_REQUEST` (`autoscaling: null` is consistent with that)."
+        "raw_output": "I'll read the context file and the relevant finding-logic reference.**Something else** \u2014 it degrades, not passes and not fails-as-normal. Per IX-04 (`references/finding-logic.md:456-466`), the trigger is `projection_type == \"ALL\"` **and** `amplification_ratio > 0.8`. Here the ratio is `null` (both `index_size_bytes` and `table_size_bytes` read 0 from stale metadata, refreshed only ~every 6 h), so the threshold can't be evaluated.\n\nThe rule explicitly forbids silently skipping it. You emit IX-04 at **Low** instead of Medium, with the ratio text replaced by:\n\n> Storage amplification could not be computed because `IndexSizeBytes`/`TableSizeBytes` still read 0; DynamoDB refreshes them about every six hours. Re-run once they populate to quantify the overhead.\n\nThis is reinforced by the cross-rule table (line 590): any rule dividing by `TableSizeBytes` or `ItemCount` must degrade to a stated-uncertainty finding when either is 0 \u2014 \"a threshold that cannot be evaluated is not a passing threshold.\"\n\nTwo related notes for this table, since they'd land in the same report section:\n- IX-04 is a Phase A rule, so `sample.status: not_yet_run` doesn't block it.\n- The same index's zero reads must **not** be reported as IX-01 (unused index) \u2014 `metric_coverage_days: 0`, so IX-02 applies (lines 407-409: \"A zero over four hours is not evidence of thirty days of disuse\")."
       },
       "without_skill": {
         "eval_id": "ddb-data-health-null-amplification",
@@ -1076,30 +1076,30 @@
           },
           {
             "text": "contains 'Low' or contains 'still' or contains 'not a pass' or contains 'not pass'",
-            "passed": false,
-            "evidence": "No OR branch satisfied \u2014 contains 'low': Substring not found: 'low'; contains 'still': Substring not found: 'still'; contains 'not a pass': Substring not found: 'not a pass'; contains 'not pass': Substring not found: 'not pass'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains 'not a pass' \u2014 Substring found: 'not a pass'",
             "method": "deterministic",
             "confidence": 1.0,
             "uncertain": false
           }
         ],
-        "pass_rate": 0.6666666666666666,
-        "summary": "Without skill: 67% assertions passed",
+        "pass_rate": 1.0,
+        "summary": "Without skill: 100% assertions passed",
         "execution_metrics": {
-          "tool_calls": 7,
+          "tool_calls": 6,
           "token_counts": {
-            "input_tokens": 14,
-            "output_tokens": 2652,
-            "cache_read_input_tokens": 290298,
-            "cache_creation_input_tokens": 40805
+            "input_tokens": 10,
+            "output_tokens": 1891,
+            "cache_read_input_tokens": 190081,
+            "cache_creation_input_tokens": 39498
           }
         },
         "timing": {
-          "elapsed_seconds": 54.1358275419916
+          "elapsed_seconds": 44.27216049999697
         },
-        "raw_output": "The `dynamodb-data-health-inspection` skill isn't installed in this environment (not in `~/.claude/skills`, not in the AWS agent-skills registry, and the `~/Desktop/Nebula-tools-for-devops/agent-skills/dynamodb-data-health-inspection` path doesn't exist), so I can't quote its rule text. Answering from the file alone:\n\n**Neither pass nor fail \u2014 the check is not evaluable and should be reported as inconclusive / no-data, not as a finding.**\n\nWhy the data forces that:\n\n- `amplification_ratio: null` isn't a missing field to default around \u2014 it's undefined arithmetic. The ratio is index bytes \u00f7 table bytes, and both are `0` (`index_size_bytes: 0`, `table_size_bytes: 0`). There's no value to compare against a threshold.\n- The zeros are stale, not real. The table's `_note` says 2001 items were bulk-loaded minutes ago and DynamoDB refreshes `ItemCount`/`TableSizeBytes` only every ~6 hours. `consumed_write_sum_30d: 8884` on the index confirms data actually landed.\n- The usual fallback signal is also unusable: `consumed_read_sum_30d: 0` would normally suggest an unread ALL-projection index, but `metric_coverage_days: 0` means there is no observation window behind that zero. Same for `read_throttle_sum_14d`/`write_throttle_sum_14d`, both `null`.\n\nSo `projection_type: ALL` on `orders-by-status` is a configuration fact here, not evidence of over-projection. Re-run after the ~6h metadata refresh and once at least a few days of index metrics accumulate; only then does the ALL-vs-usage comparison mean anything. Contrast `orders-prod`, where the same index name has `amplification_ratio: 0.92`, `metric_coverage_days: 30`, and `consumed_read_sum_30d: 0` \u2014 that one has the coverage to actually support a finding."
+        "raw_output": "I'll read the file and find the skill that defines this check.I can't answer \"according to the skill\" \u2014 the `dynamodb-data-health-inspection` skill isn't installed on this machine, and nothing in the working directory contains its check definitions. I searched `~/.claude/skills`, the plugin/agent skill listing, and the AWS skill registry; only a stale transcript directory name references it. So I have no access to the actual pass/fail thresholds for `over-broad-projection`, and I won't invent them.\n\nWhat the file itself supports, reasoning from the data alone:\n\nThe check can't be evaluated for `freshly-loaded-prod` / `orders-by-status` \u2014 it's **indeterminate / insufficient data**, not a pass and not a fail. The reason is right there in the table's `_note` and metrics:\n\n- `projection_type: ALL` alone is only half the input; over-broad means \"projects more than the read pattern needs,\" which requires evidence of what reads actually consume.\n- `amplification_ratio: null`, `index_size_bytes: 0`, `item_count: 0` \u2014 DynamoDB refreshes those counters roughly every 6 hours, and the bulk load finished minutes before capture. Zero is a reporting artifact, not real emptiness (2001 items were loaded).\n- `metric_coverage_days: 0` and `consumed_read_sum_30d: 0` with `read_throttle_sum_14d: null` \u2014 there is no read history to establish that the projected attributes go unread. A newly created index legitimately has zero reads.\n- `sample.status: \"not_yet_run\"` (awaiting operator consent), so there's no item-shape data to estimate amplification independently.\n\nCompare `orders-prod`, where the same index name has real inputs \u2014 `amplification_ratio: 0.92`, `consumed_read_sum_30d: 0` over a full 30 days of coverage, and 42.8M writes \u2014 the shape a genuine over-broad-projection finding would have.\n\nIf you point me at the skill directory (or install it), I'll read its actual rule and tell you what verdict it prescribes, including whether it has a defined \"unknown/skip\" state for null amplif"
       },
-      "delta_pass_rate": 0.33333333333333337
+      "delta_pass_rate": 0.0
     },
     {
       "eval_id": "ddb-data-health-hotkey-without-keyrange-metric",
@@ -1147,15 +1147,15 @@
           "tool_calls": 2,
           "token_counts": {
             "input_tokens": 4,
-            "output_tokens": 1101,
-            "cache_read_input_tokens": 55846,
-            "cache_creation_input_tokens": 55164
+            "output_tokens": 2118,
+            "cache_read_input_tokens": 56471,
+            "cache_creation_input_tokens": 55782
           }
         },
         "timing": {
-          "elapsed_seconds": 26.64576658399892
+          "elapsed_seconds": 36.869831792020705
         },
-        "raw_output": "I'll read the context file and the skill's finding logic for hot partition keys.**Yes \u2014 HK-02 fires. It is a confirmed hot partition**, via the rule's *corroborating* evidence path rather than its strong one.\n\nHow the trigger is satisfied (`references/finding-logic.md:168`):\n\n| Condition | Value | Met |\n|---|---|---|\n| Top contributor \u2265 3\u00d7 second | 402,100 / 18,400 = **21.9\u00d7** | \u2705 |\n| Throttling observed | `key_range` = `NotAvailable`, but `WriteThrottleEvents` = 29,400 and `ThrottledRequests` = 21,100 over 14d | \u2705 (corroborating tier) |\n\nThe rule explicitly says **do not require the key-range metric** \u2014 gating on it would suppress the majority of genuine hot partitions (throttling presents in 93.6% of real cases but key-range is cited in only 12.2%, versus 63.5% for Contributor Insights). A `NotAvailable` key-range metric plus non-zero throttle events is the second row of HK-02's evidence table, not a disqualifier.\n\nTwo things the finding must carry because the evidence is corroborating, not strong:\n\n1. State that the **partition-level attribution rests on Contributor Insights alone** \u2014 the key-range metric did not confirm that a single partition exceeded its 1,000 WCU/s ceiling.\n2. Add the verbatim recommendation: *\"enable an alarm on `WriteKeyRangeThroughputThrottleEvents >= 1` to get direct partition-level confirmation on the next occurrence.\"*\n\nHK-04 does **not** apply here \u2014 it requires `key_range > 0` *and* no identified contributor; this table has the inverse (no key-range data, contributor clearly identified). HK-03 also does not apply, since throttling is present.\n\nNote on the substituted template: `<key_range_events>` has no value to fill. Report the observed `WriteThrottleEvents`/`ThrottledRequests` counts in its place and say the key-range metric published no data, rather than writing a number the metric never produced."
+        "raw_output": "I'll read the context file and the skill's finding logic.**Yes \u2014 HK-02 fires. This is a confirmed hot partition** (High severity), via the corroborating evidence path, not the strong one.\n\nBoth triggers are met:\n\n| Trigger | Value in file | Met |\n|---|---|---|\n| Top contributor \u2265 3\u00d7 second | `t#0007` at 402,100 vs `t#0031` at 18,400 = **21.9\u00d7** | \u2705 |\n| Throttling observed | `key_range` is `NotAvailable`, **and** `WriteThrottleEvents` 29,400 + `ThrottledRequests` 21,100 over 14d | \u2705 (corroborating) |\n\nThe skill is explicit that HK-02 must **not** be gated on the key-range metric: across ~1,275 real hot-partition cases, throttling was the presenting symptom in 93.6% but key-range was cited in only 12.2%, while Contributor Insights was cited in 63.5%. `NotAvailable` on an older table is the expected shape, not a disqualifier. Note also that Contributor Insights here is in `all-access` mode with `rule_kind: most-accessed`, so the 402,100 is a traffic ranking \u2014 exactly the signal HK-02 wants.\n\n## HK-02 \u00b7 Hot key confirmed with throttling \u00b7 High\n\n> **Partition key `t#0007` is a confirmed hot partition.** Contributor Insights ranks it at 402,100 versus 18,400 for the next key (21.9\u00d7 higher), and the table recorded 29,400 `WriteThrottleEvents` and 21,100 `ThrottledRequests` over the last 14 days. A key-range throttle event is the direct signal that a single partition's hard ceiling \u2014 **1,000 WCU/s and 3,000 RCU/s** \u2014 was exceeded, independent of how much capacity the table has in aggregate. Aggregate consumed capacity over the same window was 12,400,000 write units and 3,100,000 read units.\n>\n> Remediation, in the order real cases are resolved:\n> 1. **Handle the throttles the client already sees** \u2014 retry with exponential backoff plus full jitter, and resubmit `UnprocessedItems` from `BatchWriteItem`. This is the single most common resolution and it stops data loss today, before any re-modelling.\n> 2. **Give the table headroom** \u2014 raise provisioned capacity (which also adds"
       },
       "without_skill": {
         "eval_id": "ddb-data-health-hotkey-without-keyrange-metric",
@@ -1164,7 +1164,7 @@
           {
             "text": "contains 'HK-02' or contains 'confirmed hot'",
             "passed": true,
-            "evidence": "OR satisfied by: contains 'confirmed hot' \u2014 Substring found: 'confirmed hot'",
+            "evidence": "OR satisfied by: contains 'hk-02' \u2014 Substring found: 'hk-02'",
             "method": "deterministic",
             "confidence": 1.0,
             "uncertain": false
@@ -1187,30 +1187,30 @@
           },
           {
             "text": "contains 'alarm' or contains 'KeyRange'",
-            "passed": false,
-            "evidence": "No OR branch satisfied \u2014 contains 'alarm': Substring not found: 'alarm'; contains 'keyrange': Substring not found: 'keyrange'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains 'alarm' \u2014 Substring found: 'alarm'",
             "method": "deterministic",
             "confidence": 1.0,
             "uncertain": false
           }
         ],
-        "pass_rate": 0.75,
-        "summary": "Without skill: 75% assertions passed",
+        "pass_rate": 1.0,
+        "summary": "Without skill: 100% assertions passed",
         "execution_metrics": {
-          "tool_calls": 7,
+          "tool_calls": 18,
           "token_counts": {
-            "input_tokens": 12,
-            "output_tokens": 4240,
-            "cache_read_input_tokens": 242117,
-            "cache_creation_input_tokens": 41549
+            "input_tokens": 28,
+            "output_tokens": 4671,
+            "cache_read_input_tokens": 709252,
+            "cache_creation_input_tokens": 60470
           }
         },
         "timing": {
-          "elapsed_seconds": 75.98921262499061
+          "elapsed_seconds": 191.52548066701274
         },
-        "raw_output": "I'll read the file first.The skill itself isn't installed locally \u2014 only a leftover project directory named after it. Let me check if it's retrievable.**I can't answer \"according to the skill\" \u2014 `dynamodb-data-health-inspection` isn't installed here** (only a leftover `~/.claude/projects/` transcript directory named after it; it's not in `~/.claude/skills/` and not in the AWS skill registry). So I have no rule text to cite, and I won't invent its thresholds. Below is my own reading of the data.\n\n**Not a confirmed hot partition \u2014 a strong but causally unjoined hypothesis.**\n\nNothing in the record links the concentrated key to the throttle events. The file actually contains its own contrast case:\n\n| | orders-prod | legacy-sessions-prod |\n|---|---|---|\n| CI `rule_kind` | `throttled-keys` | `most-accessed` |\n| `throttling.key_range.status` | `OK` (write 14622) | `NotAvailable` (null) |\n\nFor `orders-prod`, Contributor Insights is reporting keys *that were throttled*, and the key-range metric independently corroborates it \u2014 the key and the throttling are joined. For `legacy-sessions-prod`, CI only says `t#0007` is the most-accessed key (402100 vs 18400, ~22x), and the throttles (write 29400, 21100 throttled requests) are a separate, unattributed fact.\n\nTwo things to keep straight:\n\n- `NotAvailable` is not zero. It doesn't refute the hypothesis, it just fails to confirm it \u2014 and the file's own `_note` argues this gap is normal for older tables (cited in only 12.2% of real cases vs 63.5% for CI). So \"unconfirmed\" here means *unmeasurable*, not *disproven*.\n- There's a live alternative explanation: the table is `PROVISIONED` with 12.4M consumed writes/14d and write-only throttling. Plain table-level under-provisioning produces exactly this signature with no partition-level problem at all. Skewed access and insufficient WCU are not the same diagnosis, and the data doesn't separate them.\n\nOne gap worth noting if you pursue it: the file never states the aggregation window for t"
+        "raw_output": "I'll read the file first.**Yes \u2014 HK-02 fires: `t#0007` is a confirmed hot partition (High).**\n\nThe skill's HK-02 trigger has two parts, and both are met:\n\n1. **Concentration** \u2014 top contributor \u2265 3\u00d7 the second: 402,100 vs 18,400 = **21.9\u00d7**. \u2713\n2. **Throttling observed** \u2014 satisfied by *either* of two evidence paths. The strong path (`key_range.*_sum_14d > 0`) is unavailable here, but the second row applies: `key_range` is `NotAvailable` **and** throttle events are non-zero (`WriteThrottleEvents` 29,400; `ThrottledRequests` 21,100 over 14d). \u2713\n\n`finding-logic.md:156` is explicit that the key-range metric must **not** be required: across ~1,275 real cases throttling presented in 93.6% but key-range was cited in only 12.2%, versus 63.5% for Contributor Insights \u2014 gating on key-range would suppress most genuine hot partitions. So `NotAvailable` does not downgrade this to HK-03; HK-03 is for concentration with *no throttling*, which isn't the case.\n\nTwo reporting obligations that come with the corroborating path:\n\n- State that the partition-level **attribution rests on Contributor Insights alone**, not on a key-range measurement.\n- Add the recommendation to alarm on `WriteKeyRangeThroughputThrottleEvents >= 1` for direct partition-level confirmation on the next occurrence.\n\nAggregate capacity over the window (3.1M RCU / 12.4M WCU consumed) is consistent with the classic shape \u2014 a single key against the per-partition 1,000 WCU/s ceiling while the table looks like it has headroom. Remediation order per the template: backoff/`UnprocessedItems` resubmission \u2192 capacity headroom (both mitigations) \u2192 **write sharding, which is the actual cure**."
       },
-      "delta_pass_rate": 0.25
+      "delta_pass_rate": 0.0
     },
     {
       "eval_id": "ddb-data-health-write-amplification",
@@ -1258,15 +1258,15 @@
           "tool_calls": 2,
           "token_counts": {
             "input_tokens": 4,
-            "output_tokens": 2061,
-            "cache_read_input_tokens": 55826,
-            "cache_creation_input_tokens": 55139
+            "output_tokens": 2465,
+            "cache_read_input_tokens": 56447,
+            "cache_creation_input_tokens": 55756
           }
         },
         "timing": {
-          "elapsed_seconds": 37.26455837499816
+          "elapsed_seconds": 43.8387420840445
         },
-        "raw_output": "I'll read the context file and the finding-logic reference.**IX-10 \u2014 Write amplification from indexes, Medium severity.** Summed GSI writes 81,000,000 (42.8 M + 38.2 M) against a base of 20,100,000 = **4.0\u00d7**, well over the \u2265 1.5\u00d7 trigger. It's a Phase A rule, so it fires from CloudWatch alone \u2014 no sampling, and no confidence downgrade applies.\n\nOne honesty caveat that belongs in the explanation: `table-context.json` gives the base figure as `consumed_write_sum_14d` and the GSI figures as `consumed_write_sum_30d`, so 4.0\u00d7 compares a 30-day index sum to a 14-day table sum. Normalizing the base to 30 days at the same rate (~43.1 M) still gives **1.9\u00d7** \u2014 above the threshold either way. State the ratio you used and which windows it came from rather than presenting 4.0\u00d7 as clean.\n\nThe finding body, per the verbatim template:\n\n> **Indexes are consuming 4.0\u00d7 the base table's write capacity** (81,000,000 write units across 2 indexes versus 20,100,000 on the table over 30 days for the indexes and 14 days for the base table). Every write to the base table that touches an index's key or projected attributes is replicated into that index and billed again. With 2 indexes on this table, a single logical write costs up to 3 physical writes, which is why the consumed capacity exceeds what the application appears to be writing. Per-index write consumption: `orders-by-status` 42,800,000; `orders-by-date` 38,200,000.\n>\n> Remediation: narrow projections to the attributes each index's queries actually read (`KEYS_ONLY` or `INCLUDE` instead of `ALL`), and remove indexes no query path uses. Where an index only needs to cover a subset of items, a **sparse index** \u2014 keying on an attribute that most items omit \u2014 avoids replicating writes for items the index does not need to serve.\n\nWhere the remediation actually lands on this table: `orders-by-status` supplies 42.8 M of that 81 M while serving **zero reads in 30 days** at `metric_coverage_days: 30` (IX-01, High) with `projection_type: ALL` "
+        "raw_output": "I'll read the context file and the finding-logic reference.**IX-10 \u00b7 Write amplification from indexes \u00b7 Medium** (Phase A, no sampling needed).\n\nArithmetic: 42,800,000 + 38,200,000 = **81,000,000** GSI write units vs **20,100,000** on the base table = **4.03\u00d7**, well past the \u2265 1.5\u00d7 trigger.\n\n## The finding, per the IX-10 template\n\n> **Indexes are consuming 4.03\u00d7 the base table's write capacity** (81,000,000 write units across 2 indexes versus 20,100,000 on the table over the collection window). Every write to the base table that touches an index's key or projected attributes is replicated into that index and billed again. With 2 indexes on this table, a single logical write costs up to 3 physical writes, which is why the consumed capacity exceeds what the application appears to be writing. Per-index write consumption: `orders-by-status` 42,800,000 (projection `ALL`), `orders-by-date` 38,200,000 (projection `KEYS_ONLY`).\n>\n> Remediation: narrow projections to the attributes each index's queries actually read (`KEYS_ONLY` or `INCLUDE` instead of `ALL`), and remove indexes no query path uses. Where an index only needs to cover a subset of items, a **sparse index** \u2014 keying on an attribute that most items omit \u2014 avoids replicating writes for items the index does not need to serve.\n\n## Window caveat on the 4.03\u00d7 figure\n\nThe two numbers come from different windows in `table-context.json`: the GSI figures are `consumed_write_sum_30d`, the base-table figure is `consumed_write_sum_14d` (there is no 30-day base-table field). IX-10 specifies a 30-day-to-30-day comparison, so 4.03\u00d7 is inflated by the window mismatch. Extrapolating the base table to 30 days at a flat rate (~43.1M) gives ~**1.9\u00d7** \u2014 still above the 1.5\u00d7 trigger, so the finding fires either way, but report the ratio with the window stated rather than presenting 4.03\u00d7 as like-for-like.\n\n## What actually explains the ratio\n\nTwo other Phase A index findings on this table are the mechanism, and IX-10 should be read a"
       },
       "without_skill": {
         "eval_id": "ddb-data-health-write-amplification",
@@ -1298,30 +1298,141 @@
           },
           {
             "text": "contains 'sparse' or contains 'remov' or contains 'delete'",
-            "passed": false,
-            "evidence": "No OR branch satisfied \u2014 contains 'sparse': Substring not found: 'sparse'; contains 'remov': Substring not found: 'remov'; contains 'delete': Substring not found: 'delete'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains 'remov' \u2014 Substring found: 'remov'",
             "method": "deterministic",
             "confidence": 1.0,
             "uncertain": false
           }
         ],
-        "pass_rate": 0.5,
-        "summary": "Without skill: 50% assertions passed",
+        "pass_rate": 0.75,
+        "summary": "Without skill: 75% assertions passed",
         "execution_metrics": {
-          "tool_calls": 5,
+          "tool_calls": 7,
           "token_counts": {
-            "input_tokens": 12,
-            "output_tokens": 6234,
-            "cache_read_input_tokens": 239024,
-            "cache_creation_input_tokens": 40080
+            "input_tokens": 16,
+            "output_tokens": 6295,
+            "cache_read_input_tokens": 337217,
+            "cache_creation_input_tokens": 44033
           }
         },
         "timing": {
-          "elapsed_seconds": 105.34760154198739
+          "elapsed_seconds": 105.43528645898914
         },
-        "raw_output": "I'll read the file first.The `dynamodb-data-health-inspection` skill isn't available in this session (not on disk here, not in the AWS skill registry \u2014 only `amazon-dynamodb` is), so I can't cite its exact finding IDs or thresholds. Here's the finding the data supports, reasoned from the file alone.\n\n## First: the comparison as stated is window-mismatched\n\nThe base number is a **14-day** sum (`consumed_write_sum_14d`); both GSI numbers are **30-day** sums (`consumed_write_sum_30d`). Raw 81M \u00f7 20.1M = **4.0x is an artifact**. Normalized per day:\n\n| Source | Sum | Window | WCU/day | vs base |\n|---|---|---|---|---|\n| base table | 20,100,000 | 14d | 1.436M | 1.00x |\n| orders-by-status | 42,800,000 | 30d | 1.427M | 0.99x |\n| orders-by-date | 38,200,000 | 30d | 1.273M | 0.89x |\n| **GSIs combined** | | | **2.70M** | **1.88x** |\n\nSo the real shape is **~2.9x total write cost vs. the base table alone**, not 4x. Both GSIs are replaying essentially every base write.\n\n## The finding: GSI write amplification, and one GSI is entirely unread\n\nTwo layers, and the second is the actionable one:\n\n**1. Amplification is structural, not a defect.** Every base-table write fans out to each GSI whose key attributes the item carries, and each fan-out is billed separately. Two GSIs \u2192 roughly 3x the write bill for the same logical writes. `orders-by-status` pairs that with `projection_type: ALL` and `amplification_ratio: 0.92` \u2014 379 GB of index against 412 GB of table, a near-full second copy.\n\n**2. `orders-by-status` has `consumed_read_sum_30d: 0`.** With `metric_coverage_days: 30`, that's a real zero, not missing data. This index absorbs **~1.43M WCU/day and 379 GB of storage while serving zero queries** \u2014 roughly 53% of GSI write spend and ~48% of total write spend, buying nothing. That reframes the whole finding: the problem isn't that amplification exists, it's that half of it is pure waste.\n\nBy contrast `orders-by-date` is earning its cost (12.4M reads/30d) \u2014 though note it carries `writ"
+        "raw_output": "I'll read the context file first.**The `dynamodb-data-health-inspection` skill is not available in this session** \u2014 it's not in my loaded skills, not on disk under `~/.claude/skills/`, and not in the AWS skill registry (searched `agent_skills`; only `amazon-dynamodb` exists there). So I can't quote its finding names, severity labels, or thresholds. Below is the analysis from `table-context.json` alone; treat the finding names as descriptive, not as the skill's vocabulary.\n\n## The numbers aren't comparable as stated\n\nYour three figures come from different metric windows. `capacity.consumed_write_sum_14d` is 14 days; the GSI figures are `consumed_write_sum_30d` with `metric_coverage_days: 30`. Comparing them directly gives 81M/20.1M = **4.03x**, which is wrong.\n\nNormalized to per-day:\n\n| | write units/day | vs. base |\n|---|---|---|\n| base table | 1,435,714 | 1.00x |\n| `orders-by-status` (ALL) | 1,426,667 | 0.99x |\n| `orders-by-date` (KEYS_ONLY) | 1,273,333 | 0.89x |\n| **both GSIs** | **2,700,000** | **1.88x** |\n\nSo GSI writes are ~1.9x the base table's, and total write consumption is **2.88x** what the base table alone would cost.\n\n## Primary finding: GSI write amplification\n\nExplain it causally, not as a ratio. Every base-table write fans out to each GSI whose projected attributes changed, and each fan-out is billed separately against that index's own capacity. `orders-by-status` uses `projection_type: ALL`, so each ~8.5 KB item is written twice \u2014 once to the table, once to the index \u2014 which is exactly why its per-day rate (1.427M) is ~0.99x the base rate. That's expected behavior for ALL projection, not a defect.\n\nThe actionable part is that **`orders-by-status` has `consumed_read_sum_30d: 0` across the full 30-day coverage window.** It costs 34.5% of all write units on this table plus 379 GB of storage (`amplification_ratio: 0.92`) and serves zero reads. Confirm no seasonal/quarterly reader exists, then dropping it removes ~1.43M write units/day and 379 GB. It also"
       },
-      "delta_pass_rate": 0.5
+      "delta_pass_rate": 0.25
+    },
+    {
+      "eval_id": "ddb-data-health-no-live-table",
+      "run_index": 0,
+      "with_skill": {
+        "eval_id": "ddb-data-health-no-live-table",
+        "run_index": 0,
+        "assertion_results": [
+          {
+            "text": "contains 'no table' or contains 'no live' or contains 'unmeasurable' or contains 'cannot' or contains \"can't\" or contains 'nothing to collect'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains 'no table' \u2014 Substring found: 'no table'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'rule ID' or contains 'rule id' or contains 'dimensions' or contains 'thresholds'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains 'rule id' \u2014 Substring found: 'rule id'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains '1 MB' or contains '1MB' or contains 'LastEvaluatedKey' or contains 'pagination'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains '1 mb' \u2014 Substring found: '1 mb'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'ScannedCount' or contains 'LastEvaluatedKey' or contains 'ExclusiveStartKey' or contains 'ProjectionExpression' or contains 'FilterExpression'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains 'scannedcount' \u2014 Substring found: 'scannedcount'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          }
+        ],
+        "pass_rate": 1.0,
+        "summary": "With skill: 100% assertions passed",
+        "execution_metrics": {
+          "tool_calls": 0,
+          "token_counts": {
+            "input_tokens": 2,
+            "output_tokens": 2295,
+            "cache_read_input_tokens": 11335,
+            "cache_creation_input_tokens": 33809
+          }
+        },
+        "timing": {
+          "elapsed_seconds": 42.53617045900319
+        },
+        "raw_output": "**No \u2014 don't run the four dimensions or cite rule IDs.** There's no table to collect from, and this skill's method is \"collect evidence, then apply thresholds.\" Rule IDs on an unmeasured guess imply measurements you never made, and forcing the dimensions here would push you toward \"hot partition\" when the symptoms don't say that.\n\nReason from the symptoms instead. This is DynamoDB pagination, not a data-health problem:\n\n- `Scan` reads at most **1 MB per page**, then returns what it has plus a `LastEvaluatedKey`. A client that doesn't loop on `LastEvaluatedKey` looks like it \"stops\"; the console just shows its own load-more control.\n- The 1 MB ceiling applies to data **read**, not data **returned**. 300 KB returned across 59 items (~5 KB each) against a 1 MB page boundary (~17 KB each) is the signature of a `ProjectionExpression` (full items read, subset returned) or a `FilterExpression` (many items read, 59 survive).\n- \"Started after we migrated\" fits: if the new table has larger items or a different key order, a page boundary now falls where the old table returned everything in one page. The pagination bug was always there; the migration exposed it.\n\nWhat to ask them:\n\n1. Does the app loop while `LastEvaluatedKey` is present? That's the fix if not.\n2. Is there a `FilterExpression` or `ProjectionExpression` on the scan? Check `ScannedCount` vs `Count` in the response.\n3. Is any explicit `Limit` set (SDK config, framework default, migration tooling)?\n4. Does it *pause and then resume* seconds later, or stop for good? Resuming points at retry backoff/throttling instead \u2014 a different investigation.\n\nIf they regain access to a live table, I can run the real inspection then."
+      },
+      "without_skill": {
+        "eval_id": "ddb-data-health-no-live-table",
+        "run_index": 0,
+        "assertion_results": [
+          {
+            "text": "contains 'no table' or contains 'no live' or contains 'unmeasurable' or contains 'cannot' or contains \"can't\" or contains 'nothing to collect'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains 'no live' \u2014 Substring found: 'no live'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'rule ID' or contains 'rule id' or contains 'dimensions' or contains 'thresholds'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains 'rule id' \u2014 Substring found: 'rule id'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains '1 MB' or contains '1MB' or contains 'LastEvaluatedKey' or contains 'pagination'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains '1mb' \u2014 Substring found: '1mb'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          },
+          {
+            "text": "contains 'ScannedCount' or contains 'LastEvaluatedKey' or contains 'ExclusiveStartKey' or contains 'ProjectionExpression' or contains 'FilterExpression'",
+            "passed": true,
+            "evidence": "OR satisfied by: contains 'scannedcount' \u2014 Substring found: 'scannedcount'",
+            "method": "deterministic",
+            "confidence": 1.0,
+            "uncertain": false
+          }
+        ],
+        "pass_rate": 1.0,
+        "summary": "Without skill: 100% assertions passed",
+        "execution_metrics": {
+          "tool_calls": 2,
+          "token_counts": {
+            "input_tokens": 4,
+            "output_tokens": 3624,
+            "cache_read_input_tokens": 48951,
+            "cache_creation_input_tokens": 29025
+          }
+        },
+        "timing": {
+          "elapsed_seconds": 60.03811145800864
+        },
+        "raw_output": "No such skill is loaded in this session \u2014 the working directory is empty and no DynamoDB skill is registered among the available skills. So I won't apply \"four dimensions\" or cite rule IDs; inventing IDs would give the customer fake authority to quote back. If you have a specific skill in mind, point me at its path and I'll follow it verbatim.\n\nOn the report itself, with no live table I can rank hypotheses and name the evidence that discriminates them, but I can't diagnose it.\n\n**What the symptoms already tell you:** the same 59-item boundary in both the console and their app means the cut is server-side (same page boundary), not a bug unique to their client. Scan order is stable for an unmodified table, which is why it's *exactly* 59 every time.\n\n**Most likely causes, in order:**\n\n1. **Normal 1MB page boundary + a client that ignores `LastEvaluatedKey`.** The old table was probably small enough to fit in one page, so the missing pagination never showed. Migration made items larger or more numerous, and now page 1 ends at item 59.\n2. **The 1MB limit is measured before `FilterExpression` and `ProjectionExpression` are applied.** This is the cleanest explanation for 300KB returned vs. a 1MB cap \u2014 ~59 items \u00d7 ~17KB stored, trimmed to 300KB on the wire.\n3. **Throttling, not truncation** \u2014 if \"pauses\" means it stalls and then resumes rather than stopping. A full-1MB eventually-consistent page costs ~128 RCUs (~256 strongly consistent); a new table with lower provisioned throughput or a capped on-demand maximum would throttle and the SDK would back off. Fits \"started after we migrated\" well.\n4. **An explicit `Limit`,** or the console's page size, if 59 is coincidental to a partition boundary.\n\n**Ask them for, from one reproduction:**\n- Is `LastEvaluatedKey` present in the response? (This single answer settles #1.)\n- `Count` vs. `ScannedCount`, and `ConsumedCapacity` with `ReturnConsumedCapacity=TOTAL`.\n- The exact Scan params: `FilterExpression`, `ProjectionExpression`, `"
+      },
+      "delta_pass_rate": 0.0
     },
     {
       "eval_id": "ddb-data-health-item-size-limit",
@@ -1366,18 +1477,18 @@
         "pass_rate": 1.0,
         "summary": "With skill: 100% assertions passed",
         "execution_metrics": {
-          "tool_calls": 6,
+          "tool_calls": 2,
           "token_counts": {
-            "input_tokens": 12,
-            "output_tokens": 7631,
-            "cache_read_input_tokens": 275046,
-            "cache_creation_input_tokens": 49939
+            "input_tokens": 6,
+            "output_tokens": 5978,
+            "cache_read_input_tokens": 109672,
+            "cache_creation_input_tokens": 56278
           }
         },
         "timing": {
-          "elapsed_seconds": 111.14489341701847
+          "elapsed_seconds": 84.1473827920272
         },
-        "raw_output": "I'll read the context file first.**Yes \u2014 2 of 1,000 sampled items are within 9% of the 400 KB limit (max 372,900 B \u2248 364 KB), and `lineItems` alone drives 61.4% of item bytes.** All findings below come from the `orders-prod` sample block in `table-context.json` (`collected_at` 2026-09-10, us-east-1, account 111122223333). No AWS APIs were called.\n\n## Item Size findings\n\n### IS-01 \u00b7 Item approaching the 400 KB limit \u00b7 **Medium** (downgraded from High)\n\n> **2 sampled item(s) are within 12.5 % of the 400 KB item size limit** \u2014 the largest is 372,900 bytes (\u2248364 KB). A write that pushes an item past 400 KB fails with `ValidationException`, and the failure surfaces in the application, not in a DynamoDB metric. Items this large also cost 46 RCU per eventually-consistent read, so every read of them is 92\u00d7 the cost of a 4 KB item. Attributes contributing most to size: `lineItems`, `shippingHistory`, `customerNotes`.\n>\n> Remediation: move the largest attributes to Amazon S3 and store the object key in the item, or split the item vertically across sort-key rows. Add an application-side guard that rejects or offloads items above a threshold you choose, so the 400 KB ceiling is never reached in production.\n> Confidence: sampled (n=1000, 0.002% of table).\n\n> Severity downgraded one level: the sample of 1000 items is 0.002% of the table, too small to support the full severity.\n\nNo LSIs are configured on this table, so the 400 KB limit applies to the base item only \u2014 headroom is the full 400 KB.\n\n### IS-02 \u00b7 Large mean or p99 item size \u00b7 **Low** (downgraded from Medium)\n\n> **Item sizes are large: p99 128,400 B (\u2248125 KB), mean 8,548 B (\u22488.4 KB), max 372,900 B (\u2248364 KB).** DynamoDB bills reads in 4 KB units and writes in 1 KB units, so a 8,548 B mean item size makes every read cost at least 1.5 RCU (eventually consistent; 3 RCU strongly consistent) and every write at least 9 WCU. `Query` and `Scan` throughput is bounded by bytes, not item count, so pagination will return fewer items"
+        "raw_output": "Reasoning only from `table-context.json` (collected 2026-09-10, `us-east-1`, account 111122223333). No AWS calls made.\n\n**Yes \u2014 2 sampled items are past 350 KB, and `lineItems` is the dominant driver (61.4% of all sampled bytes).**\n\nScope: this answers the **item size** dimension only. The other three dimensions are present in the file but were not evaluated in this run \u2014 see the bottom.\n\n## Sample provenance\n\n`sample.status: completed`, shape mode, 1,000 items across 4 segments / 4 pages, 1,043.5 RCU consumed, `size_drift_pct` 3.1. That is \u22480.002% of the table (1,000 of 48.2 M items \u2014 the file's `pct_of_table` field reads `2e-06`, roughly an order of magnitude lower; either figure is far below the 0.01% threshold). A `Scan` returns items in partition-layout order, so this sample is biased and corroborating, not proof. **Every finding below is downgraded one severity level for that reason**, and absence of anything larger in the sample is not evidence that nothing larger exists.\n\nConfidence on all findings: `sampled (n=1000, \u22480.002% of table)`.\n\n## IS-01 \u00b7 Item approaching the 400 KB limit \u00b7 **Medium** (downgraded from High)\n\n> **2 sampled item(s) are within 12.5 % of the 400 KB item size limit** \u2014 the largest is 372,900 bytes (364.2 KiB). A write that pushes an item past 400 KB fails with `ValidationException`, and the failure surfaces in the application, not in a DynamoDB metric. Items this large also cost 46 RCU per eventually-consistent read, so every read of them is 92\u00d7 the cost of a 4 KB item. Attributes contributing most to size: `lineItems`, `shippingHistory`, `customerNotes`.\n>\n> Remediation: move the largest attributes to Amazon S3 and store the object key in the item, or split the item vertically across sort-key rows. Add an application-side guard that rejects or offloads items above a threshold you choose, so the 400 KB ceiling is never reached in production.\n> Confidence: sampled (n=1000, \u22480.002% of table).\n\nSeverity downgraded one level: the sample of "
       },
       "without_skill": {
         "eval_id": "ddb-data-health-item-size-limit",
@@ -1419,18 +1530,18 @@
         "pass_rate": 1.0,
         "summary": "Without skill: 100% assertions passed",
         "execution_metrics": {
-          "tool_calls": 1,
+          "tool_calls": 2,
           "token_counts": {
             "input_tokens": 4,
-            "output_tokens": 2350,
-            "cache_read_input_tokens": 48893,
-            "cache_creation_input_tokens": 33661
+            "output_tokens": 3185,
+            "cache_read_input_tokens": 48895,
+            "cache_creation_input_tokens": 34707
           }
         },
         "timing": {
-          "elapsed_seconds": 43.49372158400365
+          "elapsed_seconds": 52.68169245799072
         },
-        "raw_output": "I'll read the file first.**Yes \u2014 a small tail is close to the limit.** In the 1,000-item sample of `orders-prod`, the largest item is **372,900 bytes = 91% of the 400 KB item limit**, with only ~27 KB of headroom.\n\nDistribution of the tail (sample = 1,000 items):\n\n| Bucket | Count | Extrapolated to 48.2M items |\n|---|---|---|\n| 256\u2013350 KB | 1 | ~48,000 |\n| > 350 KB | 2 | ~96,000 |\n| p99 | 128,400 B (32% of limit) | \u2014 |\n| p95 | 44,800 B (11%) | \u2014 |\n| median | 6,100 B | \u2014 |\n\nCaveats on those extrapolations: the sample covers 0.0002% of the table and the tail rests on 3 observed items, so the count of near-limit items is order-of-magnitude only (Poisson 95% CI on 3/1,000 is roughly 0.6\u20138.8 per 1,000 \u2192 ~30K\u2013420K items over 256 KB). The direction is solid, the magnitude is not. Also, 372.9 KB is the max *in the sample*; the true table max is almost certainly higher, and items already at that size cannot accept further appends \u2014 the write will fail with `ValidationException`, not silently truncate.\n\n**Attributes driving size** (`top_attributes_by_bytes`, 82.4% of all sampled bytes):\n\n1. **`lineItems`** (List) \u2014 61.4% of bytes, present in 100% of items, ~5.2 KB/item average. The dominant driver, and unbounded: order size scales with cart size.\n2. **`shippingHistory`** (List) \u2014 14.2% of bytes, present in 812/1,000, ~1.5 KB/item where present. Append-only shape, so it grows monotonically over an order's life \u2014 this is the attribute most likely to push an already-large item over the edge.\n3. **`customerNotes`** (String) \u2014 6.8% of bytes, but present in only 344/1,000, so ~1.7 KB/item where present \u2014 denser per occurrence than `shippingHistory`.\n\nThe remaining ~24 attributes (mean attribute count is 27) account for 17.6% combined, so nothing else is worth targeting.\n\nTwo related consequences of the size profile, since they're visible in the same file:\n- The `orders-by-status` GSI projects `ALL` (379 GB, amplification 0.92), so every large item is written twice. Its `consumed_re"
+        "raw_output": "I'll read the file first.**Yes \u2014 the top of the distribution is at 91% of the 400 KB limit**, and `lineItems` is the dominant driver. Nothing in the sample exceeded 400 KB, but two items are within ~36 KB of it.\n\n## Distance to the 400 KB (409,600-byte) limit \u2014 orders-prod\n\n| Percentile | Bytes | % of limit |\n|---|---|---|\n| median | 6,100 | 1.5% |\n| p95 | 44,800 | 10.9% |\n| p99 | 128,400 | 31.3% |\n| **max** | **372,900** | **91.0%** (35.8 KB headroom) |\n\nHistogram tail from the 1,000-item sample: 25 items in 64\u2013256 KB, 1 in 256\u2013350 KB, **2 above 350 KB**. Mean (8,548) sits well above median (6,100) \u2014 heavily right-skewed, so the risk lives entirely in the tail, not the typical item.\n\nExtrapolated to 48.2M items, 0.2% in the >350 KB bucket is ~96,000 items. Treat that as order-of-magnitude only: it rests on 2 observations, and the exact binomial 95% CI (0.02%\u20130.72%) spans roughly **12,000 to 350,000 items**. The sample covered 2e-06 of the table.\n\n## What's driving size\n\n| Attribute | Type | % of sampled bytes | Present in | Avg bytes where present |\n|---|---|---|---|---|\n| `lineItems` | L (list) | 61.4% | 1000/1000 | ~5,250 |\n| `shippingHistory` | L (list) | 14.2% | 812/1000 | ~1,500 |\n| `customerNotes` | S | 6.8% | 344/1000 | ~1,690 |\n\nThose three are 82.4% of all bytes; the remaining ~24 attributes (mean count is 27) split 17.6%. Both leaders are unbounded lists \u2014 the classic append-forever shape, where the tail is just the accounts with the most history. `lineItems` at 61.4% and present in every item is almost certainly what puts the 372 KB item where it is.\n\nOne caveat on attribution: `pct_of_sampled_bytes` is an aggregate across the sample, and the file has no per-item attribute breakdown for the largest items. So \"`lineItems` drives the near-limit items specifically\" is an inference from its share plus 100% presence, not something the data states directly.\n\n## Why the tail costs more than it looks\n\nA 372,900-byte write is 365 WCU on the base table. `orders-by"
       },
       "delta_pass_rate": 0.0
     }
@@ -1439,63 +1550,63 @@
     "with_skill": {
       "mean_pass_rate": 1.0,
       "stddev_pass_rate": 0.0,
-      "mean_tokens": 2788.5,
-      "mean_input_tokens": 6.0,
-      "mean_output_tokens": 2788.5,
-      "mean_total_tokens": 2794.5,
-      "mean_tool_calls": 2.9
+      "mean_tokens": 2658.9,
+      "mean_input_tokens": 5.0,
+      "mean_output_tokens": 2658.9,
+      "mean_total_tokens": 2663.9,
+      "mean_tool_calls": 2.1
     },
     "without_skill": {
-      "mean_pass_rate": 0.7987,
-      "stddev_pass_rate": 0.2955,
-      "mean_tokens": 3590.1,
-      "mean_input_tokens": 11.1,
-      "mean_output_tokens": 3590.1,
-      "mean_total_tokens": 3601.2,
-      "mean_tool_calls": 6.1
+      "mean_pass_rate": 0.8631,
+      "stddev_pass_rate": 0.3094,
+      "mean_tokens": 2934.6,
+      "mean_input_tokens": 9.6,
+      "mean_output_tokens": 2934.6,
+      "mean_total_tokens": 2944.2,
+      "mean_tool_calls": 5.2
     },
     "delta": {
-      "pass_rate": 0.2013,
-      "tokens": -801.6,
-      "total_tokens": -806.7,
-      "input_tokens": -5.1,
-      "tool_calls": -3.2
+      "pass_rate": 0.1369,
+      "tokens": -275.8,
+      "total_tokens": -280.4,
+      "input_tokens": -4.6,
+      "tool_calls": -3.1
     },
     "cost_efficiency": {
-      "quality_delta": 0.2013,
-      "cost_delta_pct": -22.4,
+      "quality_delta": 0.1369,
+      "cost_delta_pct": -9.5,
       "classification": "PARETO_BETTER",
       "emoji": "\ud83d\udfe2",
       "description": "Skill improves quality while reducing cost"
     },
     "estimated_cost": {
       "with_skill_per_run": {
-        "input_cost": 1.8e-05,
-        "output_cost": 0.041827,
-        "total_cost": 0.041845,
+        "input_cost": 1.5e-05,
+        "output_cost": 0.039883,
+        "total_cost": 0.039898,
         "model": "sonnet",
         "currency": "USD"
       },
       "without_skill_per_run": {
-        "input_cost": 3.3e-05,
-        "output_cost": 0.053851,
-        "total_cost": 0.053884,
+        "input_cost": 2.9e-05,
+        "output_cost": 0.04402,
+        "total_cost": 0.044048,
         "model": "sonnet",
         "currency": "USD"
       },
-      "per_eval_pair": 0.095729,
-      "total_runs": 13,
-      "total_cost": 1.2445,
+      "per_eval_pair": 0.083946,
+      "total_runs": 14,
+      "total_cost": 1.1752,
       "model": "sonnet",
       "currency": "USD"
     }
   },
   "scores": {
     "outcome": 1.0,
-    "process": 0.481,
+    "process": 0.3973,
     "style": 1.0,
     "efficiency": 1.0,
-    "overall": 0.8703
+    "overall": 0.8493
   },
   "passed": true
 }

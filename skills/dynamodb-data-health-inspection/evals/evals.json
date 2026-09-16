@@ -163,6 +163,18 @@
     ]
   },
   {
+    "id": "ddb-data-health-no-live-table",
+    "prompt": "A customer pasted this report about a DynamoDB table they no longer have access to: 'Scan returns exactly 59 items then pauses, consistently, across the console and our app. Total payload is about 300KB for those 59 items. Started after we migrated to a new table.' There is no live table to inspect. How should you respond, and should you apply this skill's four dimensions and rule IDs?",
+    "expected_output": "Declines to run the inspection because there is no live table to collect evidence from, and declines to apply the four dimensions or cite rule IDs for unmeasured guesses. Reaches the correct diagnosis instead: normal Scan pagination at the 1 MB per-page limit, resumed via LastEvaluatedKey, with the 300KB/1MB gap explained by the limit applying to data read before FilterExpression or ProjectionExpression trims it. Does not assert a hot partition.",
+    "files": [],
+    "assertions": [
+      "contains 'no table' or contains 'no live' or contains 'unmeasurable' or contains 'cannot' or contains \"can't\" or contains 'nothing to collect'",
+      "contains 'rule ID' or contains 'rule id' or contains 'dimensions' or contains 'thresholds'",
+      "contains '1 MB' or contains '1MB' or contains 'LastEvaluatedKey' or contains 'pagination'",
+      "contains 'ScannedCount' or contains 'LastEvaluatedKey' or contains 'ExclusiveStartKey' or contains 'ProjectionExpression' or contains 'FilterExpression'"
+    ]
+  },
+  {
     "id": "ddb-data-health-item-size-limit",
     "prompt": "Read table-context.json. For orders-prod, are any items close to the DynamoDB item size limit, and which attributes are driving item size? Do not call any AWS APIs; reason only from the file.",
     "expected_output": "Identifies 2 sampled items above 350 KB with a max of 372900 bytes against the 400 KB hard limit, and names lineItems (61.4 percent of sampled bytes) as the dominant attribute, followed by shippingHistory and customerNotes. Notes the finding is sampled and carries a confidence annotation.",

@@ -10,8 +10,8 @@
       "trigger_rate": 1.0,
       "passed": true,
       "mean_input_tokens": 2.0,
-      "mean_output_tokens": 98.0,
-      "mean_total_tokens": 100.0
+      "mean_output_tokens": 79.0,
+      "mean_total_tokens": 81.0
     },
     {
       "query": "Is there a skill for finding unused DynamoDB GSIs and checking whether TTL is actually reclaiming storage? Answer yes or no with the skill name; do not execute it.",
@@ -21,8 +21,8 @@
       "trigger_rate": 1.0,
       "passed": true,
       "mean_input_tokens": 2.0,
-      "mean_output_tokens": 77.0,
-      "mean_total_tokens": 79.0
+      "mean_output_tokens": 108.0,
+      "mean_total_tokens": 110.0
     },
     {
       "query": "Name the skill that samples DynamoDB items to check item size distribution against the 400 KB limit. Do not run any inspection.",
@@ -32,8 +32,8 @@
       "trigger_rate": 1.0,
       "passed": true,
       "mean_input_tokens": 2.0,
-      "mean_output_tokens": 77.0,
-      "mean_total_tokens": 79.0
+      "mean_output_tokens": 80.0,
+      "mean_total_tokens": 82.0
     },
     {
       "query": "How do I reduce my Amazon S3 storage costs?",
@@ -43,8 +43,8 @@
       "trigger_rate": 0.0,
       "passed": true,
       "mean_input_tokens": 2.0,
-      "mean_output_tokens": 1505.0,
-      "mean_total_tokens": 1507.0
+      "mean_output_tokens": 2360.0,
+      "mean_total_tokens": 2362.0
     },
     {
       "query": "Write a Python function that reverses a linked list",
@@ -54,8 +54,8 @@
       "trigger_rate": 0.0,
       "passed": true,
       "mean_input_tokens": 2.0,
-      "mean_output_tokens": 88.0,
-      "mean_total_tokens": 90.0
+      "mean_output_tokens": 216.0,
+      "mean_total_tokens": 218.0
     },
     {
       "query": "My DynamoDB table has no CloudWatch alarms configured and point-in-time recovery is off. Set up the monitoring and backup configuration I should have.",
@@ -64,9 +64,9 @@
       "run_count": 1,
       "trigger_rate": 0.0,
       "passed": true,
-      "mean_input_tokens": 2.0,
-      "mean_output_tokens": 1674.0,
-      "mean_total_tokens": 1676.0
+      "mean_input_tokens": 36.0,
+      "mean_output_tokens": 31961.0,
+      "mean_total_tokens": 31997.0
     },
     {
       "query": "What's a good restaurant near the Seattle waterfront?",
@@ -76,8 +76,8 @@
       "trigger_rate": 0.0,
       "passed": true,
       "mean_input_tokens": 2.0,
-      "mean_output_tokens": 175.0,
-      "mean_total_tokens": 177.0
+      "mean_output_tokens": 203.0,
+      "mean_total_tokens": 205.0
     }
   ],
   "summary": {
@@ -86,17 +86,17 @@
     "failed": 0,
     "trigger_precision": 1.0,
     "no_trigger_precision": 1.0,
-    "mean_total_tokens_per_run": 529.7,
+    "mean_total_tokens_per_run": 5007.9,
     "estimated_cost": {
       "per_run": {
-        "input_cost": 6e-06,
-        "output_cost": 0.007916,
-        "total_cost": 0.007922,
+        "input_cost": 2.1e-05,
+        "output_cost": 0.075015,
+        "total_cost": 0.075036,
         "model": "sonnet",
         "currency": "USD"
       },
       "total_runs": 7,
-      "total_cost": 0.0555,
+      "total_cost": 0.5253,
       "model": "sonnet",
       "currency": "USD"
     }

@@ -52,11 +52,13 @@ with prioritized findings and remediation steps.
 | Mutations | None. No `Put*`, `Update*`, `Delete*`, `Create*`, `BatchWriteItem`, or `TransactWriteItems` — the skill never changes a table or a feature's enablement state |
 | Data-plane reads | `dynamodb:Scan` and `dynamodb:Query` only, only after explicit per-run consent, only within the caps below |
 | Consent | Requested per table, per run. Never carried over |
-| Caps | ≤ 1,000 items by default (10,000 absolute ceiling), ≤ 4 Scan segments, `Limit` ≤ 250, eventually-consistent reads only, ≤ 60 s, abort on 1.5× cost overshoot |
+| Sampling shape | Two passes: a **projected** pass (keys + TTL attribute only) at up to 1,000 items for TTL and key distribution, then a **full-item** pass at 100–200 items for size. Split because the agent aggregates per-item statistics in its own context, and a large payload cannot be totalled reliably |
+| Caps | ≤ 1,000 items on the projected pass (10,000 absolute ceiling), 100–200 on the full-item pass, ≤ 4 Scan segments, `Limit` ≤ 250, eventually-consistent reads only, ≤ 60 s, abort on 1.5× cost overshoot |
 | Full-table scans | Never |
 | Already-throttling tables | Sampling is refused by default, since it would add read load to a table already shedding requests |
 | Redaction | Item byte sizes, attribute names, and TTL timestamps are recorded. No other attribute value is recorded, echoed, or reported. Partition keys appear only as digests |
 | Throttled sample | Aborts rather than retrying |
+| No live table | Declines to run the inspection at all. With nothing to collect, the thresholds are unmeasurable, so it reasons from the reported symptoms without this skill's rule IDs or report format rather than forcing its four dimensions onto them |
 
 ## Prerequisites
 
@@ -103,6 +105,15 @@ with prioritized findings and remediation steps.
   measured" on a first run.
 - **Sampling costs read capacity.** `ProjectionExpression` does not reduce that cost
   — DynamoDB bills `Scan` on bytes examined, not bytes returned.
+- **Item-size findings rest on a small sample.** The full-item pass is capped at
+  100–200 items so the agent can total the sizes reliably in one pass, which on a large
+  table is a weak sample. Findings carry an explicit confidence annotation and are
+  severity-downgraded when the sample is too small to support the full severity. An
+  absence in the sample is never reported as an absence in the table.
+- **Needs a live table.** With nothing to collect the skill declines to run rather than
+  applying its framing to a description. Measured on 40 real support cases diagnosed from
+  narrative alone, forcing the framing without data *reduced* root-cause accuracy versus
+  not using the skill, which is why the guard exists.
 - Single-region per run. Global Tables must be inspected per replica region.
 
 ## Agent Types
