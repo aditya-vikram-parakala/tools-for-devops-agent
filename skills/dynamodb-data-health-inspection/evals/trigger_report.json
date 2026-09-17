@@ -21,8 +21,8 @@
       "trigger_rate": 1.0,
       "passed": true,
       "mean_input_tokens": 2.0,
-      "mean_output_tokens": 108.0,
-      "mean_total_tokens": 110.0
+      "mean_output_tokens": 103.0,
+      "mean_total_tokens": 105.0
     },
     {
       "query": "Name the skill that samples DynamoDB items to check item size distribution against the 400 KB limit. Do not run any inspection.",
@@ -32,8 +32,8 @@
       "trigger_rate": 1.0,
       "passed": true,
       "mean_input_tokens": 2.0,
-      "mean_output_tokens": 80.0,
-      "mean_total_tokens": 82.0
+      "mean_output_tokens": 148.0,
+      "mean_total_tokens": 150.0
     },
     {
       "query": "How do I reduce my Amazon S3 storage costs?",
@@ -43,8 +43,8 @@
       "trigger_rate": 0.0,
       "passed": true,
       "mean_input_tokens": 2.0,
-      "mean_output_tokens": 2360.0,
-      "mean_total_tokens": 2362.0
+      "mean_output_tokens": 1011.0,
+      "mean_total_tokens": 1013.0
     },
     {
       "query": "Write a Python function that reverses a linked list",
@@ -54,8 +54,8 @@
       "trigger_rate": 0.0,
       "passed": true,
       "mean_input_tokens": 2.0,
-      "mean_output_tokens": 216.0,
-      "mean_total_tokens": 218.0
+      "mean_output_tokens": 213.0,
+      "mean_total_tokens": 215.0
     },
     {
       "query": "My DynamoDB table has no CloudWatch alarms configured and point-in-time recovery is off. Set up the monitoring and backup configuration I should have.",
@@ -64,9 +64,9 @@
       "run_count": 1,
       "trigger_rate": 0.0,
       "passed": true,
-      "mean_input_tokens": 36.0,
-      "mean_output_tokens": 31961.0,
-      "mean_total_tokens": 31997.0
+      "mean_input_tokens": 2.0,
+      "mean_output_tokens": 2538.0,
+      "mean_total_tokens": 2540.0
     },
     {
       "query": "What's a good restaurant near the Seattle waterfront?",
@@ -76,8 +76,8 @@
       "trigger_rate": 0.0,
       "passed": true,
       "mean_input_tokens": 2.0,
-      "mean_output_tokens": 203.0,
-      "mean_total_tokens": 205.0
+      "mean_output_tokens": 123.0,
+      "mean_total_tokens": 125.0
     }
   ],
   "summary": {
@@ -86,17 +86,17 @@
     "failed": 0,
     "trigger_precision": 1.0,
     "no_trigger_precision": 1.0,
-    "mean_total_tokens_per_run": 5007.9,
+    "mean_total_tokens_per_run": 604.1,
     "estimated_cost": {
       "per_run": {
-        "input_cost": 2.1e-05,
-        "output_cost": 0.075015,
-        "total_cost": 0.075036,
+        "input_cost": 6e-06,
+        "output_cost": 0.009032,
+        "total_cost": 0.009038,
         "model": "sonnet",
         "currency": "USD"
       },
       "total_runs": 7,
-      "total_cost": 0.5253,
+      "total_cost": 0.0633,
       "model": "sonnet",
       "currency": "USD"
     }

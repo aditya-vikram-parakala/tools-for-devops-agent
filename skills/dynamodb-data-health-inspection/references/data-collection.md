@@ -232,6 +232,37 @@ ran and deleted nothing. The first is weaker evidence than the second, and
 **`NotConfigured` vs `AccessDenied`.** Never conflate them. `NotConfigured` means
 the feature is genuinely absent; `AccessDenied` means its state is unknown.
 
+## Pre-flight prompts
+
+When a status above is `AccessDenied` or `ToolingFailure`, the orchestrator presents one of
+these and waits. Use them verbatim.
+
+### Permissions audit
+
+If any check returned `AccessDenied`, present:
+
+> ⚠️ The role is missing read permissions for some checks.
+>
+> | Check | Required action | Status |
+> |---|---|---|
+> | `<check>` | `<iam:action>` | AccessDenied |
+>
+> How would you like to proceed?
+> 1. **Stop here (recommended).** Add the missing permissions and re-run.
+> 2. **Continue with reduced accuracy.** The report will note the gaps and the
+>    health rating will be capped at Medium.
+
+Wait for a response. Do NOT proceed by default.
+
+`dynamodb:Scan` is the one data-plane permission this skill needs. If it is
+denied, do not present the sampling consent gate at all — report Phase A findings
+and note that item-size and TTL-item findings require `dynamodb:Scan`.
+
+### Tooling notice
+
+If any check returned `ToolingFailure`, present the same two-option prompt with
+"Stop here and retry later (recommended)" as option 1, and wait.
+
 ## Output schema
 
 ```yaml

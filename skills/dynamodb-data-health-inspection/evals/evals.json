@@ -175,6 +175,54 @@
     ]
   },
   {
+    "id": "ddb-data-health-fact-400kb-write-semantics",
+    "prompt": "A DynamoDB write is failing with 'Item size has exceeded the maximum allowed size'. According to the skill's reference facts: is any part of that item written, can an item larger than 400 KB exist in the table, and can reads of a stored item fail because of size? No table access required.",
+    "expected_output": "States the write is rejected in full with nothing partially written, that an item over 400 KB therefore cannot exist in a table, and that reads never fail due to item size because an oversized item could not have been stored.",
+    "files": [],
+    "assertions": [
+      "contains 'reject' or contains 'not written' or contains 'nothing is written'",
+      "contains 'grandfathered' or contains 'been stored' or contains 'within the limit' or contains 'cannot exist'",
+      "contains 'read' ",
+      "contains 'no partial' or contains 'not partial' or contains 'in full' or contains 'entire'"
+    ]
+  },
+  {
+    "id": "ddb-data-health-fact-gsi-propagation",
+    "prompt": "According to the skill's reference facts, is a base-table write propagated to a global secondary index synchronously or asynchronously, and are strongly consistent reads supported on a GSI? Explain how a throttled GSI can still cause base-table writes to fail. No table access required.",
+    "expected_output": "States GSI propagation is asynchronous and eventually consistent, that strongly consistent reads are not supported on a GSI (ValidationException), and that a throttled GSI causes base-table write failures because the index's own write capacity is exhausted, not because propagation is synchronous.",
+    "files": [],
+    "assertions": [
+      "contains 'asynchronous' or contains 'asynchronously' or contains 'eventually consistent'",
+      "contains 'not supported' or contains 'ValidationException' or contains 'strongly consistent'",
+      "contains 'capacity'",
+      "contains 'backpressure' or contains 'base table' or contains 'base-table'"
+    ]
+  },
+  {
+    "id": "ddb-data-health-fact-ttl-capacity",
+    "prompt": "According to the skill's reference facts, do DynamoDB TTL deletions consume your provisioned write capacity, can they be tracked via ConsumedWriteCapacityUnits, and what deletion window does current AWS documentation state? No table access required.",
+    "expected_output": "States TTL deletion consumes no provisioned write capacity in the expiry region and does not appear in ConsumedWriteCapacityUnits (TimeToLiveDeletedItemCount is the metric that reports it), that replicated deletes in Global Table replica regions DO consume capacity, and that the documented window is within a few days - not a 48-hour SLA.",
+    "files": [],
+    "assertions": [
+      "contains 'backend capacity' or contains 'spare capacity' or contains 'not consume' or contains 'without consuming'",
+      "contains 'TimeToLiveDeletedItemCount'",
+      "contains 'few days'",
+      "contains 'replica' or contains 'Global Table' or contains 'global table'"
+    ]
+  },
+  {
+    "id": "ddb-data-health-fact-gsi-backfill",
+    "prompt": "A customer wants a GSI backfill of 230 million items to finish in about an hour and asks whether provisioning 65,000 WCU on the index achieves that. According to the skill's reference facts, can index provisioned throughput be changed during backfilling, and does Application Auto Scaling reduce index creation time? No table access required.",
+    "expected_output": "States that index provisioned throughput CAN be modified during the backfilling phase and does affect the backfill, so provisioning high index WCU then lowering it afterwards is a legitimate documented approach; and that Application Auto Scaling does NOT reduce index creation time.",
+    "files": [],
+    "assertions": [
+      "contains 'can' or contains 'yes'",
+      "contains 'auto scaling' or contains 'autoscaling' or contains 'Auto Scaling'",
+      "contains 'creation time' or contains 'not reduce' or contains 'does not decrease'",
+      "contains 'backfill'"
+    ]
+  },
+  {
     "id": "ddb-data-health-item-size-limit",
     "prompt": "Read table-context.json. For orders-prod, are any items close to the DynamoDB item size limit, and which attributes are driving item size? Do not call any AWS APIs; reason only from the file.",
     "expected_output": "Identifies 2 sampled items above 350 KB with a max of 372900 bytes against the 400 KB hard limit, and names lineItems (61.4 percent of sampled bytes) as the dominant attribute, followed by shippingHistory and customerNotes. Notes the finding is sampled and carries a confidence annotation.",

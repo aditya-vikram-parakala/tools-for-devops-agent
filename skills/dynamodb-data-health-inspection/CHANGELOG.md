@@ -1,5 +1,51 @@
 # Changelog
 
+## 1.3.0
+
+Addresses the fabrication rate the ground-truth eval measured. The `1.2.0` eval reported a 20%
+harmful-claim rate in **both** arms, which was initially dismissed as base-agent behaviour.
+Investigating it found a real defect in this skill.
+
+**Diagnosis.** Five of the harmful claims in the with-skill arm were DynamoDB mechanism facts
+inside this skill's own four dimensions - 400 KB write semantics, GSI propagation, TTL capacity
+consumption, GSI backfill throughput. In every one the finding itself was scored *correct*: the
+skill reached the right conclusion and then invented the mechanism around it.
+
+The cause was structural. The skill's facts were **stranded inside conditional finding
+templates**. TTL-06 correctly stated that TTL deletions consume no write capacity, but TTL-06
+only fires when TTL is `DISABLED` - so on a TTL *backlog* case that text was never in play and
+the agent asserted the opposite. IX-05 correctly stated that GSIs have their own provisioned
+capacity, but it only fires on missing autoscaling. Compounding it, every anti-fabrication rule
+governed *findings* only; nothing governed the explanatory prose where the fabrications lived.
+
+**Changes.**
+
+- Added `references/dynamodb-facts.md`, loaded unconditionally: the load-bearing mechanics for
+  all four dimensions, each cited to AWS documentation, each paired with the specific false
+  version observed in validation so the trap is recognisable rather than abstract. Covers
+  400 KB write rejection semantics, LSI size accounting, GSI asynchronous propagation and
+  capacity ownership, GSI backfill throughput, TTL capacity and window, item collections, and
+  restore-with-index-override.
+- Added a **"Do not fabricate mechanism"** rule to Critical Rules, extending the evidence
+  discipline from findings to the explanation around them, with an explicit instruction to say
+  "not certain" and name the settling check rather than invent a timing figure or error
+  behaviour.
+- Cross-referenced the facts file from the four finding templates that previously stranded
+  these facts (IS-01, TTL-05, IX-05, IX-06), and corrected their inline wording.
+- Four regression tests, one per fabrication class.
+
+**Correction to the previously reported number.** Hand-verifying all 16 harmful flags against
+AWS documentation found the judge had made scoring errors in **both** directions - it marked a
+control answer harmful for stating that LSI entries count toward the 400 KB limit, which the
+documentation confirms they do, and similarly for saying a restore can exclude an LSI, which
+`LocalSecondaryIndexOverride` supports. The verified with-skill rate is **7 of 40 (17.5%)**, not
+20%: five mechanism fabrications addressed here, two dimension-bias cases already fixed in
+1.2.0, and one SDK claim outside this skill's dimensions.
+
+**SKILL.md size.** Adding the rule pushed the body over the 5,000-token guidance, so the
+Scan-sample reasoning was moved into `references/sampling-protocol.md` where it belongs, leaving
+in SKILL.md only the four rules that bind the report itself. Audit back to 100/100.
+
 ## 1.2.0
 
 Adds a guard found by a blinded ground-truth eval: 40 real sev1-2 support cases, diagnosed

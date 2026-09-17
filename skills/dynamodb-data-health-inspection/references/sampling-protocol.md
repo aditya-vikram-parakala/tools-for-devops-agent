@@ -152,9 +152,38 @@ frequently collide with DynamoDB reserved words.
 
 ### The prompt
 
-Render exactly the table in SKILL.md's Phase B section, substituting real values,
-and adding a projection-mode line when minimal-exposure is being offered. Then
-stop and wait for a reply.
+Render this verbatim, substituting real values, and add a projection-mode line when
+minimal-exposure is being offered. Then stop and wait for a reply.
+
+> ⚠️ **Data-plane sampling for `<table>`** — this reads items from a live table.
+>
+> | | |
+> |---|---|
+> | Table size | `<TableSizeBytes>` (`<ItemCount>` items) |
+> | Plan | `<S>` parallel Scan segments × `Limit <L>` = **`<N>` items max** |
+> | Estimated cost | ~`<RCU>` eventually-consistent RCU (~$`<USD>`) |
+> | Recorded | item **byte sizes**, attribute **names**, TTL **timestamps** |
+> | Not recorded | every other attribute value — redacted before analysis |
+>
+> This is `<pct>`% of the table. Sampling consumes read capacity on a production
+> table and can contend with live traffic.
+>
+> 1. **Approve sampling** (recommended — needed for item-size and TTL findings)
+> 2. **Skip** — deliver control-plane findings only
+
+Put the table above in your **message text**, where it has room to be readable. If
+your runtime also takes structured choices, keep each option's label and description
+**under 80 characters** — some runtimes hard-reject longer ones and you lose a turn to
+a validation error.
+
+**Do not put the table name in an option description.** It is already in the question
+and in the message text, and interpolating it is what pushes these strings over the
+limit in practice. Use these exact short forms:
+
+| Label | Description |
+|---|---|
+| `Approve sampling` | `Bounded, redacted Scan to check TTL health and item sizes` |
+| `Skip sampling` | `Control-plane and CloudWatch findings only` |
 
 ## Hard caps
 
@@ -335,6 +364,12 @@ sampling:
 - **Compute then discard.** Values are never recorded or shown.
 - **Abort, do not retry, on throttling.** A throttled sample means the sample is
   hurting the table.
+- **A sample is biased, and can miss concentration entirely.** `Scan` returns items in
+  partition-layout order, not randomly. This is measured, not theoretical: on a validation
+  table where **40% of items shared one partition key, a bounded 4-segment sample measured
+  that key's share at 0.3%** — the pages stopped before reaching the partition holding it. So
+  a low sampled share carries almost no information. Report concentration when the sample
+  shows it; never report evenness because the sample failed to show it.
 - **A sample is biased.** `Scan` order follows partition layout. Never claim a hot
   key from sampling — that is Contributor Insights' job. Item *count* concentration
   is not traffic concentration.

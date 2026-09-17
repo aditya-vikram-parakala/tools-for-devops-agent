@@ -3,7 +3,7 @@ name: dynamodb-data-health-inspection
 description: "Inspect Amazon DynamoDB tables for data-level health issues that table-level metrics cannot reveal: hot partition keys, item size distribution (items near the 400 KB limit, attribute bloat, skew), TTL effectiveness (enabled but reclaiming nothing, missing or malformed TTL attributes, expired-item backlog), and GSI/LSI utilization (unused or write-only indexes, over-broad projections, item collections near the 10 GB LSI limit). Use when a table throttles while consumed capacity is low, storage or cost climbs unexplained, TTL is enabled but storage keeps growing, items may approach 400 KB, or when asked to review a table's data health, item distribution, index utilization, or schema anti-patterns. Read-only: control-plane, CloudWatch, and Contributor Insights analysis first, then bounded, consent-gated, value-redacting Scan sampling; never a full-table scan or a mutation. Does NOT tune capacity, request quota increases, audit alarm/PITR/backup/capacity-mode config, or diagnose latency or IAM AccessDenied."
 metadata:
   author: apparaka
-  version: "1.2.0"
+  version: "1.3.0"
   aws-devops-agent-skills.agent-types: "Chat tasks, Prevention, Incident RCA"
   aws-devops-agent-skills.aws-services: "Amazon DynamoDB, Amazon CloudWatch"
   aws-devops-agent-skills.technical-domains: "Database"
@@ -57,6 +57,9 @@ dedicated to that failure family if your Agent Space has one.
   finding template for the four dimensions.
 - **`references/report-format.md`** — report structure, dimensions matrix, health
   rating criteria, sampling provenance block, pre-render validation.
+- **`references/dynamodb-facts.md`** — the DynamoDB mechanics these dimensions depend on,
+  each cited to AWS documentation, with the specific false version observed in validation.
+  **Read it before explaining how any limit, API, or background process behaves.**
 
 Data is acquired with the agent's native `use_aws` tool under the assumed role in
 the target account. Never ask the user for credentials, access keys, or an AWS
@@ -187,37 +190,8 @@ in your own context and a large payload cannot be totalled reliably.
 4. On decline, continue to the report with Phase A findings only and set
    `sampling: declined`.
 
-The consent prompt, verbatim in shape:
-
-> ⚠️ **Data-plane sampling for `<table>`** — this reads items from a live table.
->
-> | | |
-> |---|---|
-> | Table size | `<TableSizeBytes>` (`<ItemCount>` items) |
-> | Plan | `<S>` parallel Scan segments × `Limit <L>` = **`<N>` items max** |
-> | Estimated cost | ~`<RCU>` eventually-consistent RCU (~$`<USD>`) |
-> | Recorded | item **byte sizes**, attribute **names**, TTL **timestamps** |
-> | Not recorded | every other attribute value — redacted before analysis |
->
-> This is `<pct>`% of the table. Sampling consumes read capacity on a production
-> table and can contend with live traffic.
->
-> 1. **Approve sampling** (recommended — needed for item-size and TTL findings)
-> 2. **Skip** — deliver control-plane findings only
-
-Put the table above in your **message text**, where it has room to be readable. If
-your runtime also takes structured choices, keep each option's label and description
-**under 80 characters** — some runtimes hard-reject longer ones and you lose a turn to
-a validation error.
-
-**Do not put the table name in an option description.** It is already in the question
-and in the message text, and interpolating it is what pushes these strings over the
-limit in practice. Use these exact short forms:
-
-| Label | Description |
-|---|---|
-| `Approve sampling` | `Bounded, redacted Scan to check TTL health and item sizes` |
-| `Skip sampling` | `Control-plane and CloudWatch findings only` |
+The consent prompt template is in `references/sampling-protocol.md` — render it verbatim,
+substituting real values.
 
 ### Phase C — REPORT
 
@@ -226,31 +200,16 @@ limit in practice. Use these exact short forms:
 3. Run the pre-render validation checks.
 4. Deliver per the Final Delivery Contract below.
 
-## Pre-flight: Permissions audit
+## Pre-flight: permissions and tooling gaps
 
-If any check returned `AccessDenied`, present:
+If any check returned `AccessDenied` or `ToolingFailure`, **present the gap and wait** — do not
+proceed by default. `references/data-collection.md` carries the two verbatim prompts and their
+options. Both offer "stop and fix (recommended)" or "continue with reduced accuracy", and
+continuing caps the health rating at Medium.
 
-> ⚠️ The role is missing read permissions for some checks.
->
-> | Check | Required action | Status |
-> |---|---|---|
-> | `<check>` | `<iam:action>` | AccessDenied |
->
-> How would you like to proceed?
-> 1. **Stop here (recommended).** Add the missing permissions and re-run.
-> 2. **Continue with reduced accuracy.** The report will note the gaps and the
->    health rating will be capped at Medium.
-
-Wait for a response. Do NOT proceed by default.
-
-`dynamodb:Scan` is the one data-plane permission this skill needs. If it is
-denied, do not present the sampling consent gate at all — report Phase A findings
-and note that item-size and TTL-item findings require `dynamodb:Scan`.
-
-## Pre-flight: Tooling notice
-
-If any check returned `ToolingFailure`, present the same two-option prompt with
-"Stop here and retry later (recommended)" as option 1, and wait.
+`dynamodb:Scan` is the one data-plane permission this skill needs. If it is denied, do **not**
+present the sampling consent gate at all — report Phase A findings and note that item-size and
+per-item TTL findings require it.
 
 ## When there is no table to inspect, do not run this skill
 
@@ -279,34 +238,32 @@ So when there is no live table:
 1. Say plainly that you cannot run the inspection, and why.
 2. Answer from the symptoms as a knowledgeable engineer would, without this skill's
    thresholds, rule IDs, or report format — those describe *measurements you did not make*.
-3. Offer to run the real inspection if they can point you at a live table.
+3. **`references/dynamodb-facts.md` still applies in full, and matters more here, not less.**
+   What you drop is the measurement apparatus, never the mechanics. With no data to show, your
+   answer is *entirely* explanation — so every statement about how a limit behaves, what an API
+   rejects, what consumes capacity, or how long a background process takes must still come from
+   that file. Measured: the fabrications in this path were facts that file already covers.
+4. Offer to run the real inspection if they can point you at a live table.
 
 Cite a rule ID only for a finding you actually derived from collected data. A rule ID on
 an unmeasured guess implies evidence that does not exist.
 
 ## Interpreting a Scan sample honestly
 
-This is non-negotiable and belongs in the report, not just in your reasoning.
+A `Scan` sample is biased — it returns items in partition-layout order, not randomly — so it
+is corroborating evidence, never proof. `references/sampling-protocol.md` carries the full
+reasoning and the measured case. These four rules bind the **report**, so they apply even if
+you did not re-read that file:
 
-- A `Scan` returns items in **partition-layout order, not random order.** A
-  sample is therefore biased and is *corroborating* evidence, never proof.
-- **A sample can miss concentration entirely.** This is measured, not theoretical:
-  on a validation table where 40 % of items shared one partition key, a bounded
-  4-segment sample measured that key's share at 0.3 %, because the pages stopped
-  before reaching the partition holding it. So a low sampled share is **not**
-  evidence of even distribution — it carries almost no information. Only report
-  concentration when the sample shows it; never report evenness because the sample
-  failed to show it.
-- **Never assert a hot key from sampling alone.** Key frequency in a sample
-  reflects storage distribution, not traffic distribution. A hot key is a
-  *traffic* property, and only Contributor Insights measures it. Sampling can
-  show that a partition key holds a disproportionate share of *items*, which is a
-  different (and weaker) finding.
-- Every sampled finding carries `confidence: sampled (n=<N>, <pct>% of table)`.
-- With `n < 100` or `< 0.01%` of the table, downgrade every sampled finding's
-  severity by one level and say why.
-- An absence in a sample is not evidence of absence. Never write "no oversized
-  items exist" — write "no oversized items in the sample of `<N>`".
+- **Never assert a hot key from sampling alone.** Sample key frequency reflects how data is
+  *stored*, not how traffic is *distributed*. Only Contributor Insights measures traffic.
+- **A low sampled share is not evidence of even distribution.** A sample can miss
+  concentration entirely. Report concentration when the sample shows it; never report evenness
+  because it did not.
+- **Every sampled finding carries** `confidence: sampled (n=<N>, <pct>% of table)`, and is
+  severity-downgraded one level when `n < 100` or `< 0.01%` of the table.
+- **Absence in a sample is not absence in the table.** Write "no oversized items in the sample
+  of `<N>`", never "no oversized items exist".
 
 ## Final Delivery Contract (full reviews)
 
@@ -347,6 +304,14 @@ The complete Data Health Inspection report is the authoritative output.
   attribute value — not in the report, not in intermediate reasoning shown to the
   user, not as an "example item". Report attribute *names* and their size
   contribution instead.
+- **Do not fabricate mechanism.** The evidence rules here govern findings; they govern the
+  *explanation* around a finding just as strictly. Getting the finding right and the mechanism
+  wrong is the most common way this skill has produced a harmful answer — in validation, five
+  of seven verified harmful claims sat beside a correct root cause. If you state how a limit
+  behaves, what an API rejects, what consumes capacity, or how long a background process
+  takes, it must come from `references/dynamodb-facts.md`, another reference here, or data you
+  collected. Never invent a timing figure, SLA, or error behaviour to make an explanation feel
+  complete — say you are not certain and name the check that would settle it.
 - **No interpretation without data.** Every finding cites the metric, API field,
   or sample statistic that proves it. If a check was `AccessDenied` or
   `ToolingFailure`, use the "Unable to verify" template — never infer state.
@@ -367,3 +332,5 @@ The complete Data Health Inspection report is the authoritative output.
   finding templates for the four dimensions.
 - `references/report-format.md` — Report structure, dimensions matrix, health
   rating, sampling provenance, pre-render validation, canonical AWS doc URLs.
+- `references/dynamodb-facts.md` — DynamoDB mechanics with AWS doc citations, and the
+  specific false claims observed in validation. Consult before explaining any mechanism.

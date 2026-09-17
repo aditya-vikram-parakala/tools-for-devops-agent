@@ -44,8 +44,9 @@ Trigger: any sampled item size ≥ **350 KB** (87.5 % of the 400 KB hard limit).
 
 > **`<count>` sampled item(s) are within 12.5 % of the 400 KB item size limit** —
 > the largest is `<max_size>`. A write that pushes an item past 400 KB fails with
-> `ValidationException`, and the failure surfaces in the application, not in a
-> DynamoDB metric. Items this large also cost `<rcu>` RCU per eventually-consistent
+> `ValidationException` **and is rejected in full** — nothing is partially written, and an
+> item over 400 KB cannot exist in the table. The failure surfaces in the application, not in
+> a DynamoDB metric. See `references/dynamodb-facts.md` before describing this mechanism. Items this large also cost `<rcu>` RCU per eventually-consistent
 > read, so every read of them is `<multiple>`× the cost of a 4 KB item.
 > Attributes contributing most to size: `<top_3_attribute_names>`.
 >
@@ -351,10 +352,12 @@ Trigger: fraction of sampled items expired **more than 7 days ago** > **10 %**.
 > by `Query` and `Scan` unless the application filters them out. Recency breakdown:
 > `<recency_breakdown>`.
 >
-> **TTL deletion is asynchronous and its throughput is bounded by background capacity
-> DynamoDB allocates — it is not proportional to your table's provisioned capacity, and
-> it cannot be accelerated by the customer.** A backlog is therefore expected behaviour
-> up to a point, not a defect to fix.
+> **TTL deletion is asynchronous and its throughput is bounded by backend capacity DynamoDB
+> allocates — it does not consume your provisioned capacity, does not appear in
+> `ConsumedWriteCapacityUnits`, and cannot be accelerated by the customer.** A backlog is
+> therefore expected behaviour up to a point, not a defect to fix. Do not quote a specific
+> deletion SLA: current documentation says *within a few days*, not 48 hours. See
+> `references/dynamodb-facts.md`.
 >
 > Remediation:
 > 1. **Stop serving expired data now.** Add a `FilterExpression` on the TTL attribute in
@@ -483,7 +486,8 @@ Trigger: `billing_mode == "PROVISIONED"` **and** (`autoscaling.read == false` or
 `autoscaling.write == false`).
 
 > **GSI `<index_name>` lacks autoscaling on `<dimensions>`.** GSIs have their own
-> provisioned capacity and scale independently of the base table — enabling
+> provisioned capacity — which may be set higher than the base table's — and scale
+> independently of it — enabling
 > autoscaling on the table does not extend to its indexes. An index left at fixed
 > capacity throttles when traffic grows, and a throttled GSI applies backpressure
 > that blocks writes to the base table.
@@ -497,9 +501,11 @@ Trigger: `billing_mode == "PROVISIONED"` **and** (`autoscaling.read == false` or
 Trigger: `read_throttle_sum_14d > 0` or `write_throttle_sum_14d > 0`.
 
 > **GSI `<index_name>` is throttling** (`<read_events>` read, `<write_events>` write
-> throttle events over `<window>`). A throttled GSI does not fail in isolation: it
-> applies backpressure to the base table, so base-table writes are rejected even
-> when the base table has capacity to spare. This is the usual explanation for
+> throttle events over `<window>`). A throttled GSI does not fail in isolation: it applies
+> backpressure to the base table, so base-table writes are rejected even when the base table
+> has capacity to spare. Note the mechanism — GSI propagation is **asynchronous**, and it is
+> the index's own exhausted write capacity that ultimately fails the base-table write, not
+> synchronous propagation. See `references/dynamodb-facts.md`. This is the usual explanation for
 > "the table throttles but consumed capacity is low".
 >
 > Remediation: raise this index's capacity or enable autoscaling on it, and check
