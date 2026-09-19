@@ -2,6 +2,39 @@
 
 ## 1.3.0
 
+### Measured outcome: the targeted fabrications were fixed, the aggregate rate was not
+
+Re-running the same 40-case blinded ground-truth eval across three skill versions, with the
+control arm unchanged as a constant:
+
+| | 1.1.0 | 1.3.0 (facts file) | 1.3.0 (+ no-live-table carve-out) |
+|---|---|---|---|
+| Harmful claim | 8 (21.6%) | 8 (21.6%) | **8 (21.6%)** |
+| Root cause correct | 89.2% | 91.9% | 89.2% |
+| *Control arm, unchanged* | *8* | *9* | *8* |
+
+**Four of the five originally-targeted fabrications are fixed** and stay fixed - the 400 KB
+write semantics (two cases), GSI propagation, and GSI backfill throughput. The fifth, a TTL
+capacity claim, persists.
+
+**The aggregate rate did not move.** The harmful *set rotates* between runs: different cases are
+flagged each time, and some of the new ones are facts this file explicitly covers with a
+"Do not say" warning. The control arm moved 8 to 9 to 8 across identical inputs, which puts
+run-to-run noise at about one case, so the flat 8 is indistinguishable from a small change
+either way at n=40.
+
+**Interpretation, stated plainly:** the facts file reliably corrects the specific fabrication it
+is pointed at, but it does not raise baseline instruction-following. The agent still contradicts
+facts that are present in the reference, and which facts it contradicts varies per run. This is
+a property of instruction adherence, not of the facts themselves - so the file is retained
+because its content is correct and independently verifiable, not because it demonstrably lowers
+the rate.
+
+The residual rate is largely shared with the no-skill arm and is a property of the base agent.
+Anyone relying on a DynamoDB diagnosis from this or any skill should expect roughly one
+mechanism claim in five to need checking against the documentation.
+
+
 Addresses the fabrication rate the ground-truth eval measured. The `1.2.0` eval reported a 20%
 harmful-claim rate in **both** arms, which was initially dismissed as base-agent behaviour.
 Investigating it found a real defect in this skill.
