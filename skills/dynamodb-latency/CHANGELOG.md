@@ -41,3 +41,14 @@
 - Trigger measurement note: single-run trigger evaluation is noisy enough to invert a verdict —
   an unrelated negative control ("reduce my S3 storage costs") failed at 1.0 on one run and
   measured 0.33 and then 0.0 over three. Boundary claims here rest on 3-run measurements.
+- Live-validated against real AWS (us-west-2) before submission, not just skill-eval. Confirmed
+  the load-bearing mechanics against live CloudWatch: `SuccessfulRequestLatency` returns the
+  `Percentile` statistic (p50/p99), the `Operation` dimension resolves per-operation, and a
+  metric that published nothing returns as a distinguishable empty series rather than a zero.
+  A live A/B in a DevOps Agent space showed the skill correcting a wrong no-skill diagnosis: on
+  a table whose successful-request latency rose in lockstep with writes, the no-skill agent
+  called it a "client-side artifact", while with the skill it correctly identified DynamoDB-side
+  tail queueing at the capacity ceiling with burst-capacity absorption and no throttling. In the
+  same space, installed alongside the `dynamodb-data-health-inspection` skill, a data-health
+  prompt ("which indexes are unused, is TTL reclaiming storage") routed to that skill and not to
+  this one — no cross-activation. Every latency run made zero data-plane calls.
