@@ -101,7 +101,8 @@ Fires when a throttle metric is non-zero **and** its non-zero periods intersect 
 `elevated_periods` of at least one operation — or, when no operation is elevated, when
 throttles are non-zero at all and the user reports client-observed slowness.
 
-Severity **High** when the intersection covers ≥ 3 periods; otherwise **Medium**.
+Severity **High** when the intersection covers ≥ 3 periods — or, in the no-elevation branch,
+when the throttle metric is non-zero in ≥ 3 periods; otherwise **Medium**.
 
 This rule exists because of a metric property that misleads reliably: throttled requests are
 **not** in `SuccessfulRequestLatency`. The service-side curve can stay perfectly flat while the
